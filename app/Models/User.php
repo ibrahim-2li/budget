@@ -2,15 +2,13 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\models\Expense;
-use App\models\Income;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
@@ -32,11 +30,13 @@ class User extends Authenticatable
         ];
     }
 
-    public function incomes(){
-        $this->hasMany(Income::class);
+    public function incomes(): HasMany
+    {
+        return $this->hasMany(Income::class);
     }
 
-     public function expenses(){
-        $this->hasMany(Expense::class);
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class);
     }
 }

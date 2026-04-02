@@ -1,6 +1,13 @@
 {
+  "permissions": {
+    "allow": [
+      "mcp__laravel-boost__application-info",
+      "Bash(\"C:/Users/IbrahimAli/.config/herd/bin/php84.bat\" vendor/bin/pint --dirty --format agent)",
+      "Bash(\"C:/Users/IbrahimAli/.config/herd/bin/php84.bat\" artisan:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "laravel-boost"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

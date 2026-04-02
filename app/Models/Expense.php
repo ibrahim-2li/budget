@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\models\User;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Expense extends Model
 {
-    protected $fillable = ['name','amount'];
+    protected $fillable = ['name', 'amount', 'user_id'];
 
-    public function user(){
-        $this->belongsTo(User::class);
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }
