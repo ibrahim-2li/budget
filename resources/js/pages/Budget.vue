@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { Form, Link } from '@inertiajs/vue3'
 import { router } from '@inertiajs/vue3'
 
@@ -21,6 +21,128 @@ function deleteIncome(id) {
 function deleteExpense(id) {
     router.delete(`/budget/expense/${id}`, { preserveScroll: true })
 }
+
+// Calculator
+const calcOpen = ref(false)
+const calcDisplay = ref('0')
+const calcExpression = ref('')
+const justEvaluated = ref(false)
+
+function calcInput(value) {
+    if (justEvaluated.value) {
+        // After = pressed: start fresh unless operator continues the result
+        if (['+', '-', '×', '÷'].includes(value)) {
+            calcExpression.value = calcDisplay.value + ' ' + value + ' '
+            justEvaluated.value = false
+            return
+        }
+        calcDisplay.value = '0'
+        calcExpression.value = ''
+        justEvaluated.value = false
+    }
+
+    if (['+', '-', '×', '÷'].includes(value)) {
+        calcExpression.value = (calcExpression.value || calcDisplay.value) + ' ' + value + ' '
+        calcDisplay.value = '0'
+        return
+    }
+
+    if (value === '.') {
+        if (calcDisplay.value.includes('.')) return
+        calcDisplay.value += '.'
+        return
+    }
+
+    calcDisplay.value = calcDisplay.value === '0' ? value : calcDisplay.value + value
+}
+
+function calcClear() {
+    calcDisplay.value = '0'
+    calcExpression.value = ''
+    justEvaluated.value = false
+}
+
+function calcDelete() {
+    if (justEvaluated.value) {
+        calcClear()
+        return
+    }
+    calcDisplay.value = calcDisplay.value.length > 1 ? calcDisplay.value.slice(0, -1) : '0'
+}
+
+function calcEvaluate() {
+    if (!calcExpression.value) return
+
+    const full = calcExpression.value + calcDisplay.value
+    const sanitized = full
+        .replace(/×/g, '*')
+        .replace(/÷/g, '/')
+        .replace(/[^0-9+\-*/.() ]/g, '')
+
+    try {
+        // eslint-disable-next-line no-new-func
+        const result = Function('"use strict"; return (' + sanitized + ')')()
+        const rounded = parseFloat(result.toFixed(10))
+        calcDisplay.value = isFinite(rounded) ? String(rounded) : 'Error'
+    } catch {
+        calcDisplay.value = 'Error'
+    }
+
+    calcExpression.value = ''
+    justEvaluated.value = true
+}
+
+const calcButtons = [
+    ['C', '⌫', '%', '÷'],
+    ['7', '8', '9', '×'],
+    ['4', '5', '6', '-'],
+    ['1', '2', '3', '+'],
+    ['0', '.', '='],
+]
+
+function calcButtonClass(btn) {
+    if (btn === '=') return 'col-span-2 rounded-xl bg-blue-600 text-white font-semibold text-lg hover:bg-blue-700 active:scale-95 transition-transform'
+    if (btn === 'C') return 'rounded-xl bg-red-100 text-red-600 font-semibold hover:bg-red-200 active:scale-95 transition-transform'
+    if (btn === '⌫') return 'rounded-xl bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 active:scale-95 transition-transform'
+    if (['+', '-', '×', '÷', '%'].includes(btn)) return 'rounded-xl bg-blue-50 text-blue-700 font-semibold hover:bg-blue-100 active:scale-95 transition-transform'
+    return 'rounded-xl bg-gray-100 text-gray-800 font-medium hover:bg-gray-200 active:scale-95 transition-transform'
+}
+
+function calcPress(btn) {
+    if (btn === 'C') { calcClear(); return }
+    if (btn === '⌫') { calcDelete(); return }
+    if (btn === '=') { calcEvaluate(); return }
+    if (btn === '%') {
+        const val = parseFloat(calcDisplay.value)
+        if (!isNaN(val)) calcDisplay.value = String(val / 100)
+        return
+    }
+    calcInput(btn)
+}
+
+function handleKeydown(e) {
+    if (!calcOpen.value) return
+
+    const key = e.key
+    if (e.key === 'Escape') { calcOpen.value = false; return }
+
+    const map = {
+        'Enter': '=',
+        '*': '×',
+        '/': '÷',
+        'Backspace': '⌫',
+        'Delete': 'C',
+    }
+
+    const mapped = map[key] ?? (['0','1','2','3','4','5','6','7','8','9','+','-','.','%'].includes(key) ? key : null)
+    if (mapped) {
+        e.preventDefault()
+        calcPress(mapped)
+    }
+}
+
+onMounted(() => window.addEventListener('keydown', handleKeydown))
+onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 </script>
 
 <template>
@@ -192,5 +314,62 @@ function deleteExpense(id) {
                 </div>
             </div>
         </div>
+
+        <!-- Floating Calculator Button -->
+        <button
+            @click="calcOpen = !calcOpen"
+            class="fixed right-6 bottom-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700 hover:scale-110 active:scale-95"
+            title="Calculator"
+        >
+            <svg v-if="!calcOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <rect x="4" y="2" width="16" height="20" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                <line x1="8" y1="7" x2="16" y2="7" stroke="currentColor" stroke-width="2"/>
+                <line x1="8" y1="12" x2="8" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="12" y1="12" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="16" y1="12" x2="16" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="8" y1="16" x2="8" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="12" y1="16" x2="12" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <line x1="16" y1="16" x2="16" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+
+        <!-- Calculator Panel -->
+        <Transition
+            enter-active-class="transition duration-200 ease-out"
+            enter-from-class="opacity-0 translate-y-4 scale-95"
+            enter-to-class="opacity-100 translate-y-0 scale-100"
+            leave-active-class="transition duration-150 ease-in"
+            leave-from-class="opacity-100 translate-y-0 scale-100"
+            leave-to-class="opacity-0 translate-y-4 scale-95"
+        >
+            <div
+                v-if="calcOpen"
+                class="fixed right-6 bottom-24 z-40 w-72 rounded-2xl bg-white shadow-2xl overflow-hidden"
+            >
+                <!-- Display -->
+                <div class="bg-gray-900 px-4 pt-4 pb-3">
+                    <p class="min-h-5 text-right text-xs text-gray-500 truncate">{{ calcExpression }}&nbsp;</p>
+                    <p class="text-right text-3xl font-light text-white truncate">{{ calcDisplay }}</p>
+                </div>
+
+                <!-- Buttons -->
+                <div class="grid grid-cols-4 gap-2 p-3">
+                    <template v-for="row in calcButtons" :key="row.join()">
+                        <button
+                            v-for="btn in row"
+                            :key="btn"
+                            @click="calcPress(btn)"
+                            :class="['h-14 text-base', calcButtonClass(btn), btn === '0' ? 'col-span-2' : '']"
+                        >
+                            {{ btn }}
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </Transition>
     </div>
 </template>

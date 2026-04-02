@@ -6,6 +6,7 @@ use App\Models\Expense;
 use App\Models\Income;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -52,7 +53,7 @@ class BudgetController extends Controller
 
     public function deleteIncome(Income $income): RedirectResponse
     {
-        $this->authorize('delete', $income);
+        Gate::authorize('delete', $income);
         $income->delete();
 
         return back();
@@ -60,7 +61,7 @@ class BudgetController extends Controller
 
     public function deleteExpense(Expense $expense): RedirectResponse
     {
-        $this->authorize('delete', $expense);
+        Gate::authorize('delete', $expense);
         $expense->delete();
 
         return back();
