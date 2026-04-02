@@ -3,6 +3,19 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { Form, Link } from '@inertiajs/vue3'
 import { router } from '@inertiajs/vue3'
 
+const isDark = ref(false)
+
+onMounted(() => {
+    isDark.value = localStorage.getItem('theme') === 'dark'
+    document.documentElement.classList.toggle('dark', isDark.value)
+})
+
+function toggleDark() {
+    isDark.value = !isDark.value
+    document.documentElement.classList.toggle('dark', isDark.value)
+    localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+}
+
 defineOptions({ title: 'Budget' })
 
 const props = defineProps({
@@ -146,39 +159,53 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-50">
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
         <!-- Navbar -->
-        <nav class="border-b border-gray-200 bg-white px-6 py-4">
+        <nav class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-800">
             <div class="mx-auto flex max-w-5xl items-center justify-between">
-                <span class="text-lg font-bold text-gray-800">Budget App</span>
-                <Link
-                    href="/logout"
-                    method="post"
-                    as="button"
-                    class="rounded-lg border border-gray-300 px-4 py-1.5 text-sm text-gray-600 transition hover:bg-gray-100"
-                >
-                    Logout
-                </Link>
+                <span class="text-lg font-bold text-gray-800 dark:text-white">Budget App</span>
+                <div class="flex items-center gap-3">
+                    <button
+                        @click="toggleDark"
+                        class="rounded-md p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+                        :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
+                    >
+                        <svg v-if="isDark" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        </svg>
+                    </button>
+                    <Link
+                        href="/logout"
+                        method="post"
+                        as="button"
+                        class="rounded-lg border border-gray-300 px-4 py-1.5 text-sm text-gray-600 transition hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+                    >
+                        Logout
+                    </Link>
+                </div>
             </div>
         </nav>
 
         <div class="mx-auto max-w-5xl px-6 py-8">
             <!-- Summary Cards -->
             <div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div class="rounded-2xl bg-green-50 p-5">
-                    <p class="text-sm font-medium text-green-700">Total Income</p>
-                    <p class="mt-1 text-2xl font-bold text-green-600">${{ totalIncome.toFixed(2) }}</p>
+                <div class="rounded-2xl bg-green-50 p-5 dark:bg-green-900/20">
+                    <p class="text-sm font-medium text-green-700 dark:text-green-400">Total Income</p>
+                    <p class="mt-1 text-2xl font-bold text-green-600 dark:text-green-400">${{ totalIncome.toFixed(2) }}</p>
                 </div>
-                <div class="rounded-2xl bg-red-50 p-5">
-                    <p class="text-sm font-medium text-red-700">Total Expenses</p>
-                    <p class="mt-1 text-2xl font-bold text-red-600">${{ totalExpenses.toFixed(2) }}</p>
+                <div class="rounded-2xl bg-red-50 p-5 dark:bg-red-900/20">
+                    <p class="text-sm font-medium text-red-700 dark:text-red-400">Total Expenses</p>
+                    <p class="mt-1 text-2xl font-bold text-red-600 dark:text-red-400">${{ totalExpenses.toFixed(2) }}</p>
                 </div>
                 <div
                     class="rounded-2xl p-5"
-                    :class="balance >= 0 ? 'bg-blue-50' : 'bg-orange-50'"
+                    :class="balance >= 0 ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-orange-50 dark:bg-orange-900/20'"
                 >
-                    <p class="text-sm font-medium" :class="balance >= 0 ? 'text-blue-700' : 'text-orange-700'">Balance</p>
-                    <p class="mt-1 text-2xl font-bold" :class="balance >= 0 ? 'text-blue-600' : 'text-orange-600'">
+                    <p class="text-sm font-medium" :class="balance >= 0 ? 'text-blue-700 dark:text-blue-400' : 'text-orange-700 dark:text-orange-400'">Balance</p>
+                    <p class="mt-1 text-2xl font-bold" :class="balance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'">
                         {{ balance >= 0 ? '+' : '' }}${{ balance.toFixed(2) }}
                     </p>
                 </div>
@@ -186,8 +213,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
                 <!-- Income Section -->
-                <div class="rounded-2xl bg-white p-6 shadow-sm">
-                    <h2 class="mb-4 text-lg font-semibold text-gray-800">Income</h2>
+                <div class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800">
+                    <h2 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white">Income</h2>
 
                     <Form
                         action="/budget/income"
@@ -201,7 +228,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
                                 type="text"
                                 name="name"
                                 placeholder="Source"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500"
                                 :class="{ 'border-red-400': errors.name }"
                             />
                         </div>
@@ -212,7 +239,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
                                 placeholder="Amount"
                                 min="0.01"
                                 step="0.01"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500"
                                 :class="{ 'border-red-400': errors.amount }"
                             />
                         </div>
@@ -229,11 +256,11 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
                         <li
                             v-for="income in incomes"
                             :key="income.id"
-                            class="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-2 text-sm"
+                            class="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-2 text-sm dark:bg-gray-700"
                         >
-                            <span class="text-gray-700">{{ income.name }}</span>
+                            <span class="text-gray-700 dark:text-gray-200">{{ income.name }}</span>
                             <div class="flex items-center gap-3">
-                                <span class="font-semibold text-green-600">+${{ Number(income.amount).toFixed(2) }}</span>
+                                <span class="font-semibold text-green-600 dark:text-green-400">+${{ Number(income.amount).toFixed(2) }}</span>
                                 <button
                                     @click="deleteIncome(income.id)"
                                     class="text-gray-400 transition hover:text-red-500"
@@ -243,15 +270,15 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
                                 </button>
                             </div>
                         </li>
-                        <li v-if="incomes.length === 0" class="py-4 text-center text-sm text-gray-400">
+                        <li v-if="incomes.length === 0" class="py-4 text-center text-sm text-gray-400 dark:text-gray-500">
                             No income added yet.
                         </li>
                     </ul>
                 </div>
 
                 <!-- Expenses Section -->
-                <div class="rounded-2xl bg-white p-6 shadow-sm">
-                    <h2 class="mb-4 text-lg font-semibold text-gray-800">Expenses</h2>
+                <div class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800">
+                    <h2 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white">Expenses</h2>
 
                     <Form
                         action="/budget/expense"
@@ -265,7 +292,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
                                 type="text"
                                 name="name"
                                 placeholder="Category"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:ring-2 focus:ring-red-200 focus:outline-none"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-red-500 focus:ring-2 focus:ring-red-200 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500"
                                 :class="{ 'border-red-400': errors.name }"
                             />
                         </div>
@@ -276,7 +303,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
                                 placeholder="Amount"
                                 min="0.01"
                                 step="0.01"
-                                class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-red-500 focus:ring-2 focus:ring-red-200 focus:outline-none"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-red-500 focus:ring-2 focus:ring-red-200 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500"
                                 :class="{ 'border-red-400': errors.amount }"
                             />
                         </div>
@@ -293,11 +320,11 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
                         <li
                             v-for="expense in expenses"
                             :key="expense.id"
-                            class="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-2 text-sm"
+                            class="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-2 text-sm dark:bg-gray-700"
                         >
-                            <span class="text-gray-700">{{ expense.name }}</span>
+                            <span class="text-gray-700 dark:text-gray-200">{{ expense.name }}</span>
                             <div class="flex items-center gap-3">
-                                <span class="font-semibold text-red-600">-${{ Number(expense.amount).toFixed(2) }}</span>
+                                <span class="font-semibold text-red-600 dark:text-red-400">-${{ Number(expense.amount).toFixed(2) }}</span>
                                 <button
                                     @click="deleteExpense(expense.id)"
                                     class="text-gray-400 transition hover:text-red-500"
@@ -307,7 +334,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
                                 </button>
                             </div>
                         </li>
-                        <li v-if="expenses.length === 0" class="py-4 text-center text-sm text-gray-400">
+                        <li v-if="expenses.length === 0" class="py-4 text-center text-sm text-gray-400 dark:text-gray-500">
                             No expenses added yet.
                         </li>
                     </ul>
