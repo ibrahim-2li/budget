@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="js">
 import { Form } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3'
 

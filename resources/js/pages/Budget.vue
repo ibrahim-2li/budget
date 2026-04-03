@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="js">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { Form, Link } from '@inertiajs/vue3'
 import { router } from '@inertiajs/vue3'
