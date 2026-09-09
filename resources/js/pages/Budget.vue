@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
+import '@abdulrysr/saudi-riyal-new-symbol-font/style.css';
 import { Form, Link } from '@inertiajs/vue3'
 import CategorySelect from '../components/CategorySelect.vue'
 import { router } from '@inertiajs/vue3'
@@ -214,14 +215,17 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
             </div>
         </nav>
 
-                <div class="mx-auto max-w-5xl px-6 py-8">
+        <div class="mx-auto max-w-5xl px-6 py-8">
             <!-- Month Navigation -->
-            <div class="flex items-center justify-between mb-8 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
-                <Link :href="'/budget?period=' + prevPeriod" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+            <div
+                class="flex items-center justify-between mb-8 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+                <Link :href="'/budget?period=' + prevPeriod"
+                    class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                     <i class="fa-solid fa-chevron-left text-gray-600 dark:text-gray-300"></i>
                 </Link>
                 <h2 class="text-xl font-bold text-gray-800 dark:text-white">{{ formattedPeriod }}</h2>
-                <Link :href="'/budget?period=' + nextPeriod" class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                <Link :href="'/budget?period=' + nextPeriod"
+                    class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                     <i class="fa-solid fa-chevron-right text-gray-600 dark:text-gray-300"></i>
                 </Link>
             </div>
@@ -230,12 +234,14 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
             <div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div class="rounded-2xl bg-green-50 p-5 dark:bg-green-900/20">
                     <p class="text-sm font-medium text-green-700 dark:text-green-400">Total Income</p>
-                    <p class="mt-1 text-2xl font-bold text-green-600 dark:text-green-400">${{ totalIncome.toFixed(2) }}
+                    <p class="mt-1 text-2xl font-bold text-green-600 dark:text-green-400"><span
+                            class="icon-saudi_riyal">&#xea;</span>{{ totalIncome.toFixed(2) }}
                     </p>
                 </div>
                 <div class="rounded-2xl bg-red-50 p-5 dark:bg-red-900/20">
                     <p class="text-sm font-medium text-red-700 dark:text-red-400">Total Expenses</p>
-                    <p class="mt-1 text-2xl font-bold text-red-600 dark:text-red-400">${{ totalExpenses.toFixed(2) }}
+                    <p class="mt-1 text-2xl font-bold text-red-600 dark:text-red-400"><span
+                            class="icon-saudi_riyal">&#xea;</span>{{ totalExpenses.toFixed(2) }}
                     </p>
                 </div>
                 <div class="rounded-2xl p-5"
@@ -245,7 +251,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
                         Balance</p>
                     <p class="mt-1 text-2xl font-bold"
                         :class="balance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'">
-                        {{ balance >= 0 ? '+' : '' }}${{ balance.toFixed(2) }}
+                        {{ balance >= 0 ? '+' : '' }}<span class="icon-saudi_riyal">&#xea;</span>{{ balance.toFixed(2)
+                        }}
                     </p>
                 </div>
             </div>
@@ -282,12 +289,15 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
                         <li v-for="income in incomes" :key="income.id"
                             class="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-2 text-sm dark:bg-gray-700">
                             <div class="flex items-center gap-2">
-                                <i v-if="income.category" :class="[income.category.icon, income.category.color]" class="w-5 text-center"></i>
-                                <span class="text-gray-700 dark:text-gray-200">{{ income.name || (income.category ? income.category.name : 'Unknown') }}</span>
+                                <i v-if="income.category" :class="[income.category.icon, income.category.color]"
+                                    class="w-5 text-center"></i>
+                                <span class="text-gray-700 dark:text-gray-200">{{ income.name || (income.category ?
+                                    income.category.name : 'Unknown') }}</span>
                             </div>
                             <div class="flex items-center gap-3">
-                                <span class="font-semibold text-green-600 dark:text-green-400">+${{
-                                    Number(income.amount).toFixed(2) }}</span>
+                                <span class="font-semibold text-green-600 dark:text-green-400">+<span
+                                        class="icon-saudi_riyal">&#xea;</span>{{
+                                            Number(income.amount).toFixed(2) }}</span>
                                 <button @click="deleteIncome(income.id)"
                                     class="text-gray-400 transition hover:text-red-500" title="Delete">
                                     ×
@@ -332,12 +342,15 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
                         <li v-for="expense in expenses" :key="expense.id"
                             class="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-2 text-sm dark:bg-gray-700">
                             <div class="flex items-center gap-2">
-                                <i v-if="expense.category" :class="[expense.category.icon, expense.category.color]" class="w-5 text-center"></i>
-                                <span class="text-gray-700 dark:text-gray-200">{{ expense.name || (expense.category ? expense.category.name : 'Unknown') }}</span>
+                                <i v-if="expense.category" :class="[expense.category.icon, expense.category.color]"
+                                    class="w-5 text-center"></i>
+                                <span class="text-gray-700 dark:text-gray-200">{{ expense.name || (expense.category ?
+                                    expense.category.name : 'Unknown') }}</span>
                             </div>
                             <div class="flex items-center gap-3">
-                                <span class="font-semibold text-red-600 dark:text-red-400">-${{
-                                    Number(expense.amount).toFixed(2) }}</span>
+                                <span class="font-semibold text-red-600 dark:text-red-400">-<span
+                                        class="icon-saudi_riyal">&#xea;</span>{{
+                                            Number(expense.amount).toFixed(2) }}</span>
                                 <button @click="deleteExpense(expense.id)"
                                     class="text-gray-400 transition hover:text-red-500" title="Delete">
                                     ×
