@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Expense;
 use App\Models\Income;
 use Illuminate\Http\RedirectResponse;
@@ -9,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Carbon\Carbon;
 
 class BudgetController extends Controller
 {
@@ -16,12 +18,32 @@ class BudgetController extends Controller
     {
         $user = auth()->user();
 
-        $incomes = $user->incomes()->latest()->get();
-        $expenses = $user->expenses()->latest()->get();
+        $period = request('period', Carbon::now()->format('Y-m'));
+        try {
+            $startDate = Carbon::createFromFormat('Y-m', $period)->startOfMonth();
+        } catch (\Exception $e) {
+            $startDate = Carbon::now()->startOfMonth();
+            $period = $startDate->format('Y-m');
+        }
+        $endDate = $startDate->copy()->endOfMonth();
+
+        $incomes = $user->incomes()
+            ->with('category')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->latest()
+            ->get();
+            
+        $expenses = $user->expenses()
+            ->with('category')
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->latest()
+            ->get();
 
         return Inertia::render('Budget', [
+            'currentPeriod' => $period,
             'incomes' => $incomes,
             'expenses' => $expenses,
+            'categories' => Category::where('type', 'income')->orWhere('type', 'expense')->get(),
             'totalIncome' => $incomes->sum('amount'),
             'totalExpenses' => $expenses->sum('amount'),
         ]);
@@ -30,7 +52,8 @@ class BudgetController extends Controller
     public function addIncome(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'category_id' => ['required', \Illuminate\Validation\Rule::exists('categories', 'id')->where('type', 'income')],
+            'name' => ['nullable', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0.01'],
         ]);
 
@@ -42,7 +65,8 @@ class BudgetController extends Controller
     public function addExpense(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            'category_id' => ['required', \Illuminate\Validation\Rule::exists('categories', 'id')->where('type', 'expense')],
+            'name' => ['nullable', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0.01'],
         ]);
 
