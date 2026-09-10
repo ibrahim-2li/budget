@@ -11,3 +11,16 @@
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 }
+
+/* The upstream @abdulrysr/saudi-riyal-new-symbol-font stylesheet ships an invalid
+   `src` descriptor (trailing comma), so the browser drops it and the glyph never
+   renders. Declare the face here against the package's font file instead. */
+@font-face {
+    font-family: 'SaudiRiyalSymbol';
+    src: url('@abdulrysr/saudi-riyal-new-symbol-font/saudiriyalsymbol.ttf') format('truetype');
+    font-display: swap;
+}
+
+.icon-saudi_riyal {
+    font-family: 'SaudiRiyalSymbol', sans-serif;
+}

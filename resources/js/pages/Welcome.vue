@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3'
-import { ref, onMounted } from 'vue'
-import { showLogin, showRegister } from '@/actions/App/Http/Controllers/AuthController'
+import { Head, Link, usePage } from '@inertiajs/vue3'
+import { ref, computed, onMounted } from 'vue'
+import { showLogin, showRegister, logout } from '@/actions/App/Http/Controllers/AuthController'
+import { index as budgetIndex } from '@/actions/App/Http/Controllers/BudgetController'
+
+const page = usePage()
+const user = computed(() => page.props.auth?.user)
 
 const isDark = ref(false)
 
@@ -36,9 +40,29 @@ function toggleDark() {
 
         <div class="text-center">
             <h1 class="mb-2 text-4xl font-bold text-gray-900 dark:text-white">Budget App</h1>
-            <p class="mb-8 text-gray-500 dark:text-gray-400">Track your income and expenses with ease.</p>
+            <p class="mb-8 text-gray-500 dark:text-gray-400">
+                <template v-if="user">Welcome back, {{ user.name }}.</template>
+                <template v-else>Track your income and expenses with ease.</template>
+            </p>
 
-            <div class="flex gap-4 justify-center">
+            <div v-if="user" class="flex gap-4 justify-center">
+                <Link
+                    :href="budgetIndex.url()"
+                    class="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                >
+                    Go to Budget
+                </Link>
+                <Link
+                    :href="logout.url()"
+                    method="post"
+                    as="button"
+                    class="rounded-md border border-indigo-600 px-6 py-2 text-sm font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:border-indigo-400 dark:hover:bg-gray-800"
+                >
+                    Logout
+                </Link>
+            </div>
+
+            <div v-else class="flex gap-4 justify-center">
                 <Link
                     :href="showLogin.url()"
                     class="rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white hover:bg-indigo-700"

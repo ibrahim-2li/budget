@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
-import '@abdulrysr/saudi-riyal-new-symbol-font/style.css';
-import { Form, Link } from '@inertiajs/vue3'
+import { Form, Link, usePage } from '@inertiajs/vue3'
+import { dashboard as adminDashboard } from '@/routes/admin'
 import CategorySelect from '../components/CategorySelect.vue'
 import { router } from '@inertiajs/vue3'
+
+const page = usePage()
+const isAdmin = computed(() => page.props.auth?.isAdmin)
 
 const isDark = ref(false)
 const selectedIncomeCategory = ref('')
@@ -33,10 +36,26 @@ const props = defineProps({
 
 const balance = computed(() => props.totalIncome - props.totalExpenses)
 
+/** Percentage of income already spent, capped at 100 for the progress bar. */
+const spentPercent = computed(() => {
+    if (!props.totalIncome) return props.totalExpenses > 0 ? 100 : 0
+    return Math.min(100, Math.round((props.totalExpenses / props.totalIncome) * 100))
+})
+
+const isOverspending = computed(() => props.totalExpenses > props.totalIncome)
+
+function money(value) {
+    return Number(value || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
 const dateObj = computed(() => new Date(props.currentPeriod + '-01T00:00:00'))
 
 const formattedPeriod = computed(() => {
     return dateObj.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+})
+
+const shortPeriod = computed(() => {
+    return dateObj.value.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
 })
 
 const prevPeriod = computed(() => {
@@ -55,6 +74,9 @@ const nextPeriod = computed(() => {
     return y + '-' + m
 })
 
+const incomeCategories = computed(() => props.categories.filter(c => c.type === 'income'))
+const expenseCategories = computed(() => props.categories.filter(c => c.type === 'expense'))
+
 function deleteIncome(id) {
     router.delete(`/budget/income/${id}`, { preserveScroll: true })
 }
@@ -68,24 +90,21 @@ const calcOpen = ref(false)
 const calcDisplay = ref('0')
 const calcExpression = ref('')
 const justEvaluated = ref(false)
+/** True right after an operator, while calcDisplay still shows the previous operand. */
+const awaitingOperand = ref(false)
+
+const operators = ['+', '-', '×', '÷']
 
 function calcInput(value) {
     if (justEvaluated.value) {
-        // After = pressed: start fresh unless operator continues the result
-        if (['+', '-', '×', '÷'].includes(value)) {
-            calcExpression.value = calcDisplay.value + ' ' + value + ' '
-            justEvaluated.value = false
-            return
-        }
         calcDisplay.value = '0'
         calcExpression.value = ''
         justEvaluated.value = false
     }
 
-    if (['+', '-', '×', '÷'].includes(value)) {
-        calcExpression.value = (calcExpression.value || calcDisplay.value) + ' ' + value + ' '
+    if (awaitingOperand.value) {
         calcDisplay.value = '0'
-        return
+        awaitingOperand.value = false
     }
 
     if (value === '.') {
@@ -97,10 +116,32 @@ function calcInput(value) {
     calcDisplay.value = calcDisplay.value === '0' ? value : calcDisplay.value + value
 }
 
+function calcOperator(operator) {
+    if (calcDisplay.value === 'Error') return
+
+    if (justEvaluated.value) {
+        // Chain off the result instead of starting over.
+        calcExpression.value = calcDisplay.value + ' ' + operator + ' '
+        justEvaluated.value = false
+        awaitingOperand.value = true
+        return
+    }
+
+    if (awaitingOperand.value) {
+        // Swap the pending operator rather than appending a second one.
+        calcExpression.value = calcExpression.value.replace(/[+\-×÷] $/, operator + ' ')
+        return
+    }
+
+    calcExpression.value += calcDisplay.value + ' ' + operator + ' '
+    awaitingOperand.value = true
+}
+
 function calcClear() {
     calcDisplay.value = '0'
     calcExpression.value = ''
     justEvaluated.value = false
+    awaitingOperand.value = false
 }
 
 function calcDelete() {
@@ -108,13 +149,25 @@ function calcDelete() {
         calcClear()
         return
     }
+
+    if (awaitingOperand.value) {
+        // Undo the pending operator and keep editing the previous operand.
+        calcExpression.value = calcExpression.value.replace(/[+\-×÷] $/, '')
+        awaitingOperand.value = false
+        return
+    }
+
     calcDisplay.value = calcDisplay.value.length > 1 ? calcDisplay.value.slice(0, -1) : '0'
 }
 
 function calcEvaluate() {
     if (!calcExpression.value) return
 
-    const full = calcExpression.value + calcDisplay.value
+    // A trailing operator has no right-hand operand yet, so drop it.
+    const full = awaitingOperand.value
+        ? calcExpression.value.replace(/[+\-×÷] $/, '')
+        : calcExpression.value + calcDisplay.value
+
     const sanitized = full
         .replace(/×/g, '*')
         .replace(/÷/g, '/')
@@ -131,6 +184,7 @@ function calcEvaluate() {
 
     calcExpression.value = ''
     justEvaluated.value = true
+    awaitingOperand.value = false
 }
 
 const calcButtons = [
@@ -142,20 +196,25 @@ const calcButtons = [
 ]
 
 function calcButtonClass(btn) {
-    if (btn === '=') return 'col-span-2 rounded-xl bg-blue-600 text-white font-semibold text-lg hover:bg-blue-700 active:scale-95 transition-transform'
-    if (btn === 'C') return 'rounded-xl bg-red-100 text-red-600 font-semibold hover:bg-red-200 active:scale-95 transition-transform'
-    if (btn === '⌫') return 'rounded-xl bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 active:scale-95 transition-transform'
-    if (['+', '-', '×', '÷', '%'].includes(btn)) return 'rounded-xl bg-blue-50 text-blue-700 font-semibold hover:bg-blue-100 active:scale-95 transition-transform'
-    return 'rounded-xl bg-gray-100 text-gray-800 font-medium hover:bg-gray-200 active:scale-95 transition-transform'
+    const base = 'rounded-xl font-semibold transition active:scale-95'
+    if (btn === '=') return `${base} col-span-2 bg-indigo-600 text-white text-lg hover:bg-indigo-500`
+    if (btn === 'C') return `${base} bg-rose-100 text-rose-600 hover:bg-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:hover:bg-rose-500/25`
+    if (btn === '⌫') return `${base} bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600`
+    if (['+', '-', '×', '÷', '%'].includes(btn)) return `${base} bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-500/15 dark:text-indigo-300 dark:hover:bg-indigo-500/25`
+    return `${base} bg-gray-100 text-gray-800 font-medium hover:bg-gray-200 dark:bg-gray-700/60 dark:text-gray-100 dark:hover:bg-gray-700`
 }
 
 function calcPress(btn) {
     if (btn === 'C') { calcClear(); return }
     if (btn === '⌫') { calcDelete(); return }
     if (btn === '=') { calcEvaluate(); return }
+    if (operators.includes(btn)) { calcOperator(btn); return }
     if (btn === '%') {
         const val = parseFloat(calcDisplay.value)
-        if (!isNaN(val)) calcDisplay.value = String(val / 100)
+        if (isNaN(val)) return
+        calcDisplay.value = String(val / 100)
+        justEvaluated.value = false
+        awaitingOperand.value = false
         return
     }
     calcInput(btn)
@@ -187,14 +246,24 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 </script>
 
 <template>
-    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div class="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
         <!-- Navbar -->
-        <nav class="border-b border-gray-200 bg-white px-6 py-4 dark:border-gray-700 dark:bg-gray-800">
-            <div class="mx-auto flex max-w-5xl items-center justify-between">
-                <span class="text-lg font-bold text-gray-800 dark:text-white">Budget App</span>
-                <div class="flex items-center gap-3">
-                    <button @click="toggleDark"
-                        class="rounded-md p-2 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
+        <nav
+            class="sticky top-0 z-30 border-b border-gray-200 bg-white/85 backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/85">
+            <div class="mx-auto flex h-14 max-w-5xl items-center justify-between px-4 sm:h-16 sm:px-6">
+                <div class="flex items-center gap-2.5">
+                <a href="/">
+                    <span
+                        class="flex h-10 w-10 items-center justify-center rounded-2xl text-sm text-white shadow-sm">
+                        <!-- <i class="fa-solid fa-wallet"></i> -->
+                      <img src="/images/logo.ico"  alt="logo" class="h-8 w-8" />
+                    </span>
+                </a>
+                <a href="/"><span class="text-base font-bold tracking-tight sm:text-lg">Budget</span></a>
+                </div>
+                <div class="flex items-center gap-1.5 sm:gap-2">
+                    <button @click="toggleDark" type="button"
+                        class="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
                         :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'">
                         <svg v-if="isDark" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
@@ -207,169 +276,222 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
                                 d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                         </svg>
                     </button>
+                    <Link v-if="isAdmin" :href="adminDashboard.url()"
+                        class="flex h-9 items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 text-sm font-medium text-indigo-600 transition hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/15 dark:text-indigo-300 dark:hover:bg-indigo-500/25">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span class="hidden sm:inline">Admin</span>
+                    </Link>
                     <Link href="/logout" method="post" as="button"
-                        class="rounded-lg border border-gray-300 px-4 py-1.5 text-sm text-gray-600 transition hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">
-                        Logout
+                        class="flex h-9 items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm font-medium text-gray-600 transition hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        <span class="hidden sm:inline">Logout</span>
                     </Link>
                 </div>
             </div>
         </nav>
 
-        <div class="mx-auto max-w-5xl px-6 py-8">
+        <div class="mx-auto max-w-5xl px-4 pt-5 pb-28 sm:px-6 sm:pt-8 sm:pb-16">
             <!-- Month Navigation -->
+            <div class="mb-4 flex items-center justify-between gap-2 sm:mb-6">
+                <div>
+                    <p class="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">Overview</p>
+                    <h1 class="text-xl font-bold tracking-tight sm:text-2xl">
+                        <span class="hidden sm:inline">{{ formattedPeriod }}</span>
+                        <span class="sm:hidden">{{ shortPeriod }}</span>
+                    </h1>
+                </div>
+                <div
+                    class="flex items-center gap-1 rounded-xl border border-gray-200 bg-white p-1 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                    <Link :href="'/budget?period=' + prevPeriod" preserve-scroll aria-label="Previous month"
+                        class="flex h-9 w-9 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i class="fa-solid fa-chevron-left text-sm"></i>
+                    </Link>
+                    <Link :href="'/budget?period=' + nextPeriod" preserve-scroll aria-label="Next month"
+                        class="flex h-9 w-9 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">
+                        <i class="fa-solid fa-chevron-right text-sm"></i>
+                    </Link>
+                </div>
+            </div>
+
+            <!-- Balance Hero -->
             <div
-                class="flex items-center justify-between mb-8 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-gray-700">
-                <Link :href="'/budget?period=' + prevPeriod"
-                    class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                    <i class="fa-solid fa-chevron-left text-gray-600 dark:text-gray-300"></i>
-                </Link>
-                <h2 class="text-xl font-bold text-gray-800 dark:text-white">{{ formattedPeriod }}</h2>
-                <Link :href="'/budget?period=' + nextPeriod"
-                    class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                    <i class="fa-solid fa-chevron-right text-gray-600 dark:text-gray-300"></i>
-                </Link>
+                class="mb-4 overflow-hidden rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6 dark:border-gray-800 dark:bg-gray-900">
+                <div class="flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Remaining balance</p>
+                        <p class="mt-1 text-3xl font-bold tracking-tight tabular-nums sm:text-4xl"
+                            :class="balance >= 0 ? 'text-gray-900 dark:text-white' : 'text-rose-600 dark:text-rose-400'">
+                            <span class="icon-saudi_riyal">&#xea;</span>{{ money(balance) }}
+                        </p>
+                    </div>
+                    <span class="rounded-full px-3 py-1 text-xs font-semibold"
+                        :class="isOverspending ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300'">
+                        {{ spentPercent }}% of income spent
+                    </span>
+                </div>
+
+                <div class="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
+                    <div class="h-full rounded-full transition-all duration-500"
+                        :class="isOverspending ? 'bg-rose-500' : 'bg-emerald-500'"
+                        :style="{ width: spentPercent + '%' }"></div>
+                </div>
             </div>
 
             <!-- Summary Cards -->
-            <div class="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div class="rounded-2xl bg-green-50 p-5 dark:bg-green-900/20">
-                    <p class="text-sm font-medium text-green-700 dark:text-green-400">Total Income</p>
-                    <p class="mt-1 text-2xl font-bold text-green-600 dark:text-green-400"><span
-                            class="icon-saudi_riyal">&#xea;</span>{{ totalIncome.toFixed(2) }}
+            <div class="mb-6 grid grid-cols-2 gap-3 sm:gap-4">
+                <div
+                    class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5 dark:border-gray-800 dark:bg-gray-900">
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400">
+                            <i class="fa-solid fa-arrow-down text-xs"></i>
+                        </span>
+                        <p class="text-xs font-medium text-gray-500 sm:text-sm dark:text-gray-400">Income</p>
+                    </div>
+                    <p class="mt-2 text-xl font-bold tracking-tight tabular-nums text-emerald-600 sm:text-2xl dark:text-emerald-400">
+                        <span class="icon-saudi_riyal">&#xea;</span>{{ money(totalIncome) }}
                     </p>
                 </div>
-                <div class="rounded-2xl bg-red-50 p-5 dark:bg-red-900/20">
-                    <p class="text-sm font-medium text-red-700 dark:text-red-400">Total Expenses</p>
-                    <p class="mt-1 text-2xl font-bold text-red-600 dark:text-red-400"><span
-                            class="icon-saudi_riyal">&#xea;</span>{{ totalExpenses.toFixed(2) }}
-                    </p>
-                </div>
-                <div class="rounded-2xl p-5"
-                    :class="balance >= 0 ? 'bg-blue-50 dark:bg-blue-900/20' : 'bg-orange-50 dark:bg-orange-900/20'">
-                    <p class="text-sm font-medium"
-                        :class="balance >= 0 ? 'text-blue-700 dark:text-blue-400' : 'text-orange-700 dark:text-orange-400'">
-                        Balance</p>
-                    <p class="mt-1 text-2xl font-bold"
-                        :class="balance >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'">
-                        {{ balance >= 0 ? '+' : '' }}<span class="icon-saudi_riyal">&#xea;</span>{{ balance.toFixed(2)
-                        }}
+
+                <div
+                    class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5 dark:border-gray-800 dark:bg-gray-900">
+                    <div class="flex items-center gap-2">
+                        <span
+                            class="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400">
+                            <i class="fa-solid fa-arrow-up text-xs"></i>
+                        </span>
+                        <p class="text-xs font-medium text-gray-500 sm:text-sm dark:text-gray-400">Expenses</p>
+                    </div>
+                    <p class="mt-2 text-xl font-bold tracking-tight tabular-nums text-rose-600 sm:text-2xl dark:text-rose-400">
+                        <span class="icon-saudi_riyal">&#xea;</span>{{ money(totalExpenses) }}
                     </p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
                 <!-- Income Section -->
-                <div class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800">
-                    <h2 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white">Income</h2>
+                <section
+                    class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                    <header class="flex items-center justify-between border-b border-gray-100 px-4 py-3.5 sm:px-5 dark:border-gray-800">
+                        <h2 class="flex items-center gap-2 text-base font-semibold">
+                            <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                            Income
+                        </h2>
+                        <span class="text-xs font-medium text-gray-400 dark:text-gray-500">{{ incomes.length }} entries</span>
+                    </header>
 
-                    <Form action="/budget/income" method="post" reset-on-success #default="{ errors, processing }"
-                        class="mb-4 flex gap-2">
-                        <div class="flex-1">
-                            <CategorySelect name="category_id" v-model="selectedIncomeCategory"
-                                :categories="categories.filter(c => c.type === 'income')"
-                                :error="!!errors.category_id" />
-                        </div>
-                        <!-- <div class="flex-1">
-                            <input type="text" name="name" placeholder="Source"
-                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500"
-                                :class="{ 'border-red-400': errors.name }" />
-                        </div> -->
-                        <div class="w-28">
-                            <input type="number" name="amount" placeholder="Amount" min="0.01" step="0.01"
-                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-200 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500"
-                                :class="{ 'border-red-400': errors.amount }" />
-                        </div>
-                        <button type="submit" :disabled="processing"
-                            class="rounded-lg bg-green-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:opacity-60">
-                            Add
-                        </button>
-                    </Form>
-
-                    <ul class="space-y-2">
-                        <li v-for="income in incomes" :key="income.id"
-                            class="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-2 text-sm dark:bg-gray-700">
-                            <div class="flex items-center gap-2">
-                                <i v-if="income.category" :class="[income.category.icon, income.category.color]"
-                                    class="w-5 text-center"></i>
-                                <span class="text-gray-700 dark:text-gray-200">{{ income.name || (income.category ?
-                                    income.category.name : 'Unknown') }}</span>
+                    <div class="px-4 py-4 sm:px-5">
+                        <Form action="/budget/income" method="post" reset-on-success #default="{ errors, processing }"
+                            class="flex flex-col gap-2 sm:flex-row">
+                            <div class="sm:flex-1">
+                                <CategorySelect name="category_id" v-model="selectedIncomeCategory"
+                                    :categories="incomeCategories" :error="!!errors.category_id" />
                             </div>
-                            <div class="flex items-center gap-3">
-                                <span class="font-semibold text-green-600 dark:text-green-400">+<span
-                                        class="icon-saudi_riyal">&#xea;</span>{{
-                                            Number(income.amount).toFixed(2) }}</span>
-                                <button @click="deleteIncome(income.id)"
-                                    class="text-gray-400 transition hover:text-red-500" title="Delete">
-                                    ×
+                            <div class="flex gap-2">
+                                <input type="number" name="amount" placeholder="Amount" min="0.01" step="0.01"
+                                    inputmode="decimal"
+                                    class="w-full min-w-0 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none sm:w-28 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+                                    :class="{ 'border-rose-400': errors.amount }" />
+                                <button type="submit" :disabled="processing"
+                                    class="shrink-0 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 active:scale-95 disabled:opacity-60">
+                                    Add
                                 </button>
                             </div>
-                        </li>
-                        <li v-if="incomes.length === 0"
-                            class="py-4 text-center text-sm text-gray-400 dark:text-gray-500">
-                            No income added yet.
-                        </li>
-                    </ul>
-                </div>
+                        </Form>
+
+                        <ul class="mt-4 space-y-1.5">
+                            <li v-for="income in incomes" :key="income.id"
+                                class="group flex items-center gap-3 rounded-xl border border-transparent bg-gray-50 px-3 py-2.5 transition hover:border-gray-200 dark:bg-gray-800/60 dark:hover:border-gray-700">
+                                <span
+                                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm dark:bg-gray-900">
+                                    <i v-if="income.category" :class="[income.category.icon, income.category.color]"
+                                        class="text-sm"></i>
+                                    <i v-else class="fa-solid fa-circle-question text-sm text-gray-400"></i>
+                                </span>
+                                <span class="min-w-0 flex-1 truncate text-sm font-medium">
+                                    {{ income.name || (income.category ? income.category.name : 'Unknown') }}
+                                </span>
+                                <span class="shrink-0 text-sm font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                                    +<span class="icon-saudi_riyal">&#xea;</span>{{ money(income.amount) }}
+                                </span>
+                                <button @click="deleteIncome(income.id)" type="button" title="Delete"
+                                    aria-label="Delete income"
+                                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/15">
+                                    <i class="fa-solid fa-xmark text-sm"></i>
+                                </button>
+                            </li>
+                            <li v-if="incomes.length === 0"
+                                class="rounded-xl border border-dashed border-gray-200 py-8 text-center text-sm text-gray-400 dark:border-gray-700 dark:text-gray-500">
+                                No income added yet.
+                            </li>
+                        </ul>
+                    </div>
+                </section>
 
                 <!-- Expenses Section -->
-                <div class="rounded-2xl bg-white p-6 shadow-sm dark:bg-gray-800">
-                    <h2 class="mb-4 text-lg font-semibold text-gray-800 dark:text-white">Expenses</h2>
+                <section
+                    class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                    <header class="flex items-center justify-between border-b border-gray-100 px-4 py-3.5 sm:px-5 dark:border-gray-800">
+                        <h2 class="flex items-center gap-2 text-base font-semibold">
+                            <span class="h-2 w-2 rounded-full bg-rose-500"></span>
+                            Expenses
+                        </h2>
+                        <span class="text-xs font-medium text-gray-400 dark:text-gray-500">{{ expenses.length }} entries</span>
+                    </header>
 
-                    <Form action="/budget/expense" method="post" reset-on-success #default="{ errors, processing }"
-                        class="mb-4 flex gap-2">
-                        <!-- <div class="flex-1">
-                            <input type="text" name="name" placeholder="Name"
-                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-red-500 focus:ring-2 focus:ring-red-200 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500"
-                                :class="{ 'border-red-400': errors.name }" />
-                        </div> -->
-                        <div class="flex-1">
-                            <CategorySelect name="category_id" v-model="selectedExpenseCategory"
-                                :categories="categories.filter(c => c.type === 'expense')"
-                                :error="!!errors.category_id" />
-                        </div>
-                        <div class="w-28">
-                            <input type="number" name="amount" placeholder="Amount" min="0.01" step="0.01"
-                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-red-500 focus:ring-2 focus:ring-red-200 focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-500"
-                                :class="{ 'border-red-400': errors.amount }" />
-                        </div>
-                        <button type="submit" :disabled="processing"
-                            class="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:opacity-60">
-                            Add
-                        </button>
-                    </Form>
-
-                    <ul class="space-y-2">
-                        <li v-for="expense in expenses" :key="expense.id"
-                            class="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-2 text-sm dark:bg-gray-700">
-                            <div class="flex items-center gap-2">
-                                <i v-if="expense.category" :class="[expense.category.icon, expense.category.color]"
-                                    class="w-5 text-center"></i>
-                                <span class="text-gray-700 dark:text-gray-200">{{ expense.name || (expense.category ?
-                                    expense.category.name : 'Unknown') }}</span>
+                    <div class="px-4 py-4 sm:px-5">
+                        <Form action="/budget/expense" method="post" reset-on-success #default="{ errors, processing }"
+                            class="flex flex-col gap-2 sm:flex-row">
+                            <div class="sm:flex-1">
+                                <CategorySelect name="category_id" v-model="selectedExpenseCategory"
+                                    :categories="expenseCategories" :error="!!errors.category_id" />
                             </div>
-                            <div class="flex items-center gap-3">
-                                <span class="font-semibold text-red-600 dark:text-red-400">-<span
-                                        class="icon-saudi_riyal">&#xea;</span>{{
-                                            Number(expense.amount).toFixed(2) }}</span>
-                                <button @click="deleteExpense(expense.id)"
-                                    class="text-gray-400 transition hover:text-red-500" title="Delete">
-                                    ×
+                            <div class="flex gap-2">
+                                <input type="number" name="amount" placeholder="Amount" min="0.01" step="0.01"
+                                    inputmode="decimal"
+                                    class="w-full min-w-0 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20 focus:outline-none sm:w-28 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+                                    :class="{ 'border-rose-400': errors.amount }" />
+                                <button type="submit" :disabled="processing"
+                                    class="shrink-0 rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-500 active:scale-95 disabled:opacity-60">
+                                    Add
                                 </button>
                             </div>
-                        </li>
-                        <li v-if="expenses.length === 0"
-                            class="py-4 text-center text-sm text-gray-400 dark:text-gray-500">
-                            No expenses added yet.
-                        </li>
-                    </ul>
-                </div>
+                        </Form>
+
+                        <ul class="mt-4 space-y-1.5">
+                            <li v-for="expense in expenses" :key="expense.id"
+                                class="group flex items-center gap-3 rounded-xl border border-transparent bg-gray-50 px-3 py-2.5 transition hover:border-gray-200 dark:bg-gray-800/60 dark:hover:border-gray-700">
+                                <span
+                                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white shadow-sm dark:bg-gray-900">
+                                    <i v-if="expense.category" :class="[expense.category.icon, expense.category.color]"
+                                        class="text-sm"></i>
+                                    <i v-else class="fa-solid fa-circle-question text-sm text-gray-400"></i>
+                                </span>
+                                <span class="min-w-0 flex-1 truncate text-sm font-medium">
+                                    {{ expense.name || (expense.category ? expense.category.name : 'Unknown') }}
+                                </span>
+                                <span class="shrink-0 text-sm font-semibold tabular-nums text-rose-600 dark:text-rose-400">
+                                    -<span class="icon-saudi_riyal">&#xea;</span>{{ money(expense.amount) }}
+                                </span>
+                                <button @click="deleteExpense(expense.id)" type="button" title="Delete"
+                                    aria-label="Delete expense"
+                                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/15">
+                                    <i class="fa-solid fa-xmark text-sm"></i>
+                                </button>
+                            </li>
+                            <li v-if="expenses.length === 0"
+                                class="rounded-xl border border-dashed border-gray-200 py-8 text-center text-sm text-gray-400 dark:border-gray-700 dark:text-gray-500">
+                                No expenses added yet.
+                            </li>
+                        </ul>
+                    </div>
+                </section>
             </div>
         </div>
 
         <!-- Floating Calculator Button -->
-        <button @click="calcOpen = !calcOpen"
-            class="fixed right-6 bottom-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg transition hover:bg-blue-700 hover:scale-110 active:scale-95"
-            title="Calculator">
+        <button @click="calcOpen = !calcOpen" type="button" title="Calculator"
+            class="fixed right-4 bottom-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition hover:bg-indigo-500 active:scale-95 sm:right-6 sm:bottom-6">
             <svg v-if="!calcOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor" stroke-width="2">
                 <rect x="4" y="2" width="16" height="20" rx="2" stroke="currentColor" stroke-width="2" fill="none" />
@@ -388,24 +510,30 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
             </svg>
         </button>
 
+        <!-- Calculator backdrop (mobile) -->
+        <Transition enter-active-class="transition duration-200" enter-from-class="opacity-0"
+            leave-active-class="transition duration-150" leave-to-class="opacity-0">
+            <div v-if="calcOpen" @click="calcOpen = false" class="fixed inset-0 z-30 bg-black/40 sm:hidden"></div>
+        </Transition>
+
         <!-- Calculator Panel -->
         <Transition enter-active-class="transition duration-200 ease-out"
-            enter-from-class="opacity-0 translate-y-4 scale-95" enter-to-class="opacity-100 translate-y-0 scale-100"
-            leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100 translate-y-0 scale-100"
-            leave-to-class="opacity-0 translate-y-4 scale-95">
+            enter-from-class="opacity-0 translate-y-4 sm:scale-95" enter-to-class="opacity-100 translate-y-0 sm:scale-100"
+            leave-active-class="transition duration-150 ease-in" leave-from-class="opacity-100 translate-y-0 sm:scale-100"
+            leave-to-class="opacity-0 translate-y-4 sm:scale-95">
             <div v-if="calcOpen"
-                class="fixed right-6 bottom-24 z-40 w-72 rounded-2xl bg-white shadow-2xl overflow-hidden">
+                class="fixed inset-x-3 bottom-20 z-40 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl sm:inset-x-auto sm:right-6 sm:bottom-24 sm:w-72 dark:border-gray-800 dark:bg-gray-900">
                 <!-- Display -->
-                <div class="bg-gray-900 px-4 pt-4 pb-3">
-                    <p class="min-h-5 text-right text-xs text-gray-500 truncate">{{ calcExpression }}&nbsp;</p>
-                    <p class="text-right text-3xl font-light text-white truncate">{{ calcDisplay }}</p>
+                <div class="bg-gray-900 px-4 pt-4 pb-3 dark:bg-gray-800">
+                    <p class="min-h-5 truncate text-right text-xs text-gray-400">{{ calcExpression }}&nbsp;</p>
+                    <p class="truncate text-right text-3xl font-light tabular-nums text-white">{{ calcDisplay }}</p>
                 </div>
 
                 <!-- Buttons -->
                 <div class="grid grid-cols-4 gap-2 p-3">
                     <template v-for="row in calcButtons" :key="row.join()">
-                        <button v-for="btn in row" :key="btn" @click="calcPress(btn)"
-                            :class="['h-14 text-base', calcButtonClass(btn), btn === '0' ? 'col-span-2' : '']">
+                        <button v-for="btn in row" :key="btn" @click="calcPress(btn)" type="button"
+                            :class="['h-12 text-base sm:h-14', calcButtonClass(btn), btn === '0' ? 'col-span-2' : '']">
                             {{ btn }}
                         </button>
                     </template>

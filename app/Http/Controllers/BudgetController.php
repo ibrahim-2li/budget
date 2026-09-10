@@ -5,18 +5,23 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Expense;
 use App\Models\Income;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
-use Carbon\Carbon;
 
 class BudgetController extends Controller
 {
     public function index(): Response
     {
         $user = auth()->user();
+
+        // if($user->isAdmin()){
+        //     dd('admin');
+        // }
 
         $period = request('period', Carbon::now()->format('Y-m'));
         try {
@@ -32,7 +37,7 @@ class BudgetController extends Controller
             ->whereBetween('created_at', [$startDate, $endDate])
             ->latest()
             ->get();
-            
+
         $expenses = $user->expenses()
             ->with('category')
             ->whereBetween('created_at', [$startDate, $endDate])
@@ -52,7 +57,7 @@ class BudgetController extends Controller
     public function addIncome(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'category_id' => ['required', \Illuminate\Validation\Rule::exists('categories', 'id')->where('type', 'income')],
+            'category_id' => ['required', Rule::exists('categories', 'id')->where('type', 'income')],
             'name' => ['nullable', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0.01'],
         ]);
@@ -65,7 +70,7 @@ class BudgetController extends Controller
     public function addExpense(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'category_id' => ['required', \Illuminate\Validation\Rule::exists('categories', 'id')->where('type', 'expense')],
+            'category_id' => ['required', Rule::exists('categories', 'id')->where('type', 'expense')],
             'name' => ['nullable', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'min:0.01'],
         ]);

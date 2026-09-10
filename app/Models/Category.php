@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
+use Database\Factories\CategoryFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Expense;
-use App\Models\Income;
 
 class Category extends Model
 {
+    /** @use HasFactory<CategoryFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'color',
         'icon',
-        'type'
+        'type',
     ];
 
     public function expense()
