@@ -8,6 +8,7 @@ use App\Models\Income;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -59,10 +60,12 @@ class BudgetController extends Controller
         $data = $request->validate([
             'category_id' => ['required', Rule::exists('categories', 'id')->where('type', 'income')],
             'name' => ['nullable', 'string', 'max:255'],
+            'period' => ['nullable', 'date_format:Y-m'],
             'amount' => ['required', 'numeric', 'min:0.01'],
         ]);
 
-        auth()->user()->incomes()->create($data);
+        $income = auth()->user()->incomes()->create(Arr::except($data, 'period'));
+        $income->forceFill(['created_at' => $this->entryDateForPeriod($data['period'] ?? null)])->save();
 
         return back();
     }
@@ -72,12 +75,33 @@ class BudgetController extends Controller
         $data = $request->validate([
             'category_id' => ['required', Rule::exists('categories', 'id')->where('type', 'expense')],
             'name' => ['nullable', 'string', 'max:255'],
+            'period' => ['nullable', 'date_format:Y-m'],
             'amount' => ['required', 'numeric', 'min:0.01'],
         ]);
 
-        auth()->user()->expenses()->create($data);
+        $expense = auth()->user()->expenses()->create(Arr::except($data, 'period'));
+        $expense->forceFill(['created_at' => $this->entryDateForPeriod($data['period'] ?? null)])->save();
 
         return back();
+    }
+
+    /**
+     * Resolve the timestamp an entry should carry for the period being viewed.
+     *
+     * Entries added while browsing a past or future month belong to that month,
+     * not to the month the entry happens to be created in.
+     */
+    private function entryDateForPeriod(?string $period): Carbon
+    {
+        $now = Carbon::now();
+
+        if ($period === null || $period === $now->format('Y-m')) {
+            return $now;
+        }
+
+        $startDate = Carbon::createFromFormat('Y-m', $period)->startOfMonth();
+
+        return $startDate->isFuture() ? $startDate : $startDate->copy()->endOfMonth()->min($now);
     }
 
     public function deleteIncome(Income $income): RedirectResponse

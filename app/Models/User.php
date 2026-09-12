@@ -41,6 +41,11 @@ class User extends Authenticatable
         return $this->hasMany(Expense::class);
     }
 
+    public function goals(): HasMany
+    {
+        return $this->hasMany(Goal::class);
+    }
+
     /**
      * @return BelongsTo<Role, $this>
      */

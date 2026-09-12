@@ -7,5 +7,3 @@ services:
   - mailpit
   - redis
   - sqlite
-workers:
-  - vite

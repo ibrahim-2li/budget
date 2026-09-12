@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\GoalController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
@@ -26,6 +27,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/budget/expense', [BudgetController::class, 'addExpense'])->name('budget.expense.store');
     Route::delete('/budget/income/{income}', [BudgetController::class, 'deleteIncome'])->name('budget.income.delete');
     Route::delete('/budget/expense/{expense}', [BudgetController::class, 'deleteExpense'])->name('budget.expense.delete');
+
+    Route::get('/goals', [GoalController::class, 'index'])->name('goals.index');
+    Route::post('/goals', [GoalController::class, 'store'])->name('goals.store');
+    Route::patch('/goals/{goal}', [GoalController::class, 'update'])->name('goals.update');
+    Route::delete('/goals/{goal}', [GoalController::class, 'destroy'])->name('goals.destroy');
 });
 
 // Admin routes
