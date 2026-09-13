@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { Form, Link, router, usePage } from '@inertiajs/vue3';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import GoalController from '@/actions/App/Http/Controllers/GoalController';
+import AppLogo from '@/components/AppLogo.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import { useI18n } from '@/lib/i18n';
 
 defineOptions({ title: 'Goals' });
 
@@ -11,15 +14,14 @@ const props = defineProps({
 });
 
 const page = usePage();
+const { t, intlLocale } = useI18n();
 const flashSuccess = computed(() => page.props.flash?.success);
 
 const isDark = ref(false);
-const navOpen = ref(false);
 
 function handleKeydown(event) {
     if (event.key === 'Escape') {
         cancelDelete();
-        navOpen.value = false;
     }
 }
 
@@ -71,7 +73,10 @@ const completedCount = computed(
 );
 
 const overallPercent = computed(() => {
-    if (!totalTarget.value) return 0;
+    if (!totalTarget.value) {
+return 0;
+}
+
     return Math.min(
         100,
         Math.round((totalSaved.value / totalTarget.value) * 100),
@@ -79,7 +84,10 @@ const overallPercent = computed(() => {
 });
 
 function percentage(goal) {
-    if (!Number(goal.target_amount)) return 0;
+    if (!Number(goal.target_amount)) {
+return 0;
+}
+
     return Math.min(
         100,
         Math.round(
@@ -96,8 +104,11 @@ function remaining(goal) {
 }
 
 function formatDate(value) {
-    if (!value) return null;
-    return new Date(value).toLocaleDateString('en-US', {
+    if (!value) {
+return null;
+}
+
+    return new Date(value).toLocaleDateString(intlLocale.value, {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
@@ -106,12 +117,22 @@ function formatDate(value) {
 
 /** Whole days until the target date; negative once the date has passed. */
 function daysLeft(goal) {
-    if (!goal.target_date) return null;
+    if (!goal.target_date) {
+return null;
+}
+
     const target = new Date(goal.target_date);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+
     return Math.round((target - today) / 86400000);
 }
+
+const priorityLabels = {
+    high: 'High',
+    medium: 'Medium',
+    low: 'Low',
+};
 
 const priorityStyles = {
     high: 'bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300',
@@ -120,9 +141,15 @@ const priorityStyles = {
 };
 
 function barClass(goal) {
-    if (percentage(goal) >= 100) return 'bg-emerald-500';
-    if (goal.priority === 'high') return 'bg-rose-500';
-    return 'bg-indigo-500';
+    if (percentage(goal) >= 100) {
+return 'bg-secondary-500';
+}
+
+    if (goal.priority === 'high') {
+return 'bg-rose-500';
+}
+
+    return 'bg-primary-500';
 }
 
 function startEditing(goal) {
@@ -158,7 +185,10 @@ function submitEdit(goal) {
 
 function addFunds(goal) {
     const amount = Number(contributions.value[goal.id]);
-    if (!amount) return;
+
+    if (!amount) {
+return;
+}
 
     router.patch(
         GoalController.update.url(goal.id),
@@ -190,13 +220,19 @@ function confirmDelete(goal) {
 }
 
 function cancelDelete() {
-    if (deleting.value) return;
+    if (deleting.value) {
+return;
+}
+
     goalPendingDelete.value = null;
 }
 
 function destroyGoal() {
     const goal = goalPendingDelete.value;
-    if (!goal) return;
+
+    if (!goal) {
+return;
+}
 
     router.delete(GoalController.destroy.url(goal.id), {
         preserveScroll: true,
@@ -223,41 +259,30 @@ function destroyGoal() {
                 class="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:h-16 sm:px-6"
             >
                 <div class="flex items-center gap-2.5">
-                    <button
-                        type="button"
-                        @click="navOpen = true"
-                        aria-label="Open navigation"
-                        class="-ml-1 flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 lg:hidden dark:text-gray-400 dark:hover:bg-gray-800"
-                    >
-                        <i class="fa-solid fa-bars"></i>
-                    </button>
                     <a href="/">
                         <span
                             class="flex h-10 w-10 items-center justify-center rounded-2xl text-sm text-white shadow-sm"
                         >
-                            <img
-                                src="/images/logo.ico"
-                                alt="logo"
-                                class="h-8 w-8"
-                            />
+                            <AppLogo size="h-8 w-8" />
                         </span>
                     </a>
                     <a href="/"
                         ><span
                             class="text-base font-bold tracking-tight sm:text-lg"
-                            >Budget</span
+                            >{{ t('Budget') }}</span
                         ></a
                     >
                 </div>
                 <div class="flex items-center gap-1.5 sm:gap-2">
+                    <LanguageSwitcher />
                     <button
                         @click="toggleDark"
                         type="button"
                         class="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
                         :aria-label="
                             isDark
-                                ? 'Switch to light mode'
-                                : 'Switch to dark mode'
+                                ? t('Switch to light mode')
+                                : t('Switch to dark mode')
                         "
                     >
                         <svg
@@ -298,16 +323,16 @@ function destroyGoal() {
                         class="flex h-9 items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm font-medium text-gray-600 transition hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
                     >
                         <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                        <span class="hidden sm:inline">Logout</span>
+                        <span class="hidden sm:inline">{{ t('Logout') }}</span>
                     </Link>
                 </div>
             </div>
         </nav>
 
         <div
-            class="mx-auto flex max-w-6xl gap-6 px-4 pt-5 pb-20 sm:px-6 sm:pt-8"
+            class="mx-auto flex max-w-6xl gap-6 px-4 pt-5 pb-28 sm:px-6 sm:pt-8 lg:pb-20"
         >
-            <AppSidebar v-model:open="navOpen" />
+            <AppSidebar />
 
             <main class="min-w-0 flex-1">
                 <div class="mb-4 flex items-end justify-between gap-2 sm:mb-6">
@@ -315,30 +340,30 @@ function destroyGoal() {
                         <p
                             class="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400"
                         >
-                            Savings
+                            {{ t('Savings') }}
                         </p>
                         <h1
                             class="text-xl font-bold tracking-tight sm:text-2xl"
                         >
-                            Goals
+                            {{ t('Goals') }}
                         </h1>
                     </div>
                     <button
                         @click="formOpen = !formOpen"
                         type="button"
-                        class="flex h-9 shrink-0 items-center gap-2 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white transition hover:bg-indigo-500 active:scale-95"
+                        class="flex h-9 shrink-0 items-center gap-2 rounded-lg bg-primary-600 px-4 text-sm font-semibold text-white transition hover:bg-primary-500 active:scale-95"
                     >
                         <i
                             class="fa-solid"
                             :class="formOpen ? 'fa-xmark' : 'fa-plus'"
                         ></i>
-                        {{ formOpen ? 'Cancel' : 'New goal' }}
+                        {{ formOpen ? t('Cancel') : t('New goal') }}
                     </button>
                 </div>
 
                 <p
                     v-if="flashSuccess"
-                    class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
+                    class="mb-4 rounded-xl border border-secondary-200 bg-secondary-50 px-4 py-2.5 text-sm font-medium text-secondary-700 dark:border-secondary-500/30 dark:bg-secondary-500/10 dark:text-secondary-300"
                 >
                     {{ flashSuccess }}
                 </p>
@@ -352,7 +377,7 @@ function destroyGoal() {
                             <p
                                 class="text-sm font-medium text-gray-500 dark:text-gray-400"
                             >
-                                Total saved
+                                {{ t('Total saved') }}
                             </p>
                             <p
                                 class="mt-1 text-3xl font-bold tracking-tight tabular-nums sm:text-4xl"
@@ -369,16 +394,16 @@ function destroyGoal() {
                             </p>
                         </div>
                         <span
-                            class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300"
+                            class="rounded-full bg-primary-50 px-3 py-1 text-xs font-semibold text-primary-600 dark:bg-primary-500/15 dark:text-primary-300"
                         >
-                            {{ completedCount }} of {{ goals.length }} reached
+                            {{ t(':completed of :total reached', { completed: completedCount, total: goals.length }) }}
                         </span>
                     </div>
                     <div
                         class="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800"
                     >
                         <div
-                            class="h-full rounded-full bg-indigo-500 transition-all duration-500"
+                            class="h-full rounded-full bg-primary-500 transition-all duration-500"
                             :style="{ width: overallPercent + '%' }"
                         ></div>
                     </div>
@@ -399,13 +424,13 @@ function destroyGoal() {
                         <div class="sm:col-span-2">
                             <label
                                 class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400"
-                                >Name</label
+                                >{{ t('Name') }}</label
                             >
                             <input
                                 type="text"
                                 name="name"
-                                placeholder="New laptop"
-                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+                                :placeholder="t('New laptop')"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
                                 :class="{ 'border-rose-400': errors.name }"
                             />
                             <p
@@ -418,22 +443,22 @@ function destroyGoal() {
                         <div class="sm:col-span-2">
                             <label
                                 class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400"
-                                >Description
+                                >{{ t('Description') }}
                                 <span class="text-gray-400"
-                                    >(optional)</span
+                                    >{{ t('(optional)') }}</span
                                 ></label
                             >
                             <textarea
                                 name="description"
                                 rows="2"
-                                placeholder="What are you saving for?"
-                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+                                :placeholder="t('What are you saving for?')"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
                             ></textarea>
                         </div>
                         <div>
                             <label
                                 class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400"
-                                >Target amount</label
+                                >{{ t('Target amount') }}</label
                             >
                             <input
                                 type="number"
@@ -442,7 +467,7 @@ function destroyGoal() {
                                 step="0.01"
                                 inputmode="decimal"
                                 placeholder="0.00"
-                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
                                 :class="{
                                     'border-rose-400': errors.target_amount,
                                 }"
@@ -457,15 +482,15 @@ function destroyGoal() {
                         <div>
                             <label
                                 class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400"
-                                >Target date
+                                >{{ t('Target date') }}
                                 <span class="text-gray-400"
-                                    >(optional)</span
+                                    >{{ t('(optional)') }}</span
                                 ></label
                             >
                             <input
                                 type="date"
                                 name="target_date"
-                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                 :class="{
                                     'border-rose-400': errors.target_date,
                                 }"
@@ -480,24 +505,24 @@ function destroyGoal() {
                         <div>
                             <label
                                 class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400"
-                                >Priority</label
+                                >{{ t('Priority') }}</label
                             >
                             <select
                                 name="priority"
-                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                             >
-                                <option value="high">High</option>
-                                <option value="medium" selected>Medium</option>
-                                <option value="low">Low</option>
+                                <option value="high">{{ t('High') }}</option>
+                                <option value="medium" selected>{{ t('Medium') }}</option>
+                                <option value="low">{{ t('Low') }}</option>
                             </select>
                         </div>
                         <div class="flex items-end">
                             <button
                                 type="submit"
                                 :disabled="processing"
-                                class="h-[38px] w-full rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white transition hover:bg-indigo-500 active:scale-95 disabled:opacity-60"
+                                class="h-[38px] w-full rounded-lg bg-primary-600 px-4 text-sm font-semibold text-white transition hover:bg-primary-500 active:scale-95 disabled:opacity-60"
                             >
-                                Create goal
+                                {{ t('Create goal') }}
                             </button>
                         </div>
                     </Form>
@@ -529,7 +554,7 @@ function destroyGoal() {
                                     class="shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold capitalize"
                                     :class="priorityStyles[goal.priority]"
                                 >
-                                    {{ goal.priority }}
+                                    {{ t(priorityLabels[goal.priority]) }}
                                 </span>
                             </div>
 
@@ -554,7 +579,7 @@ function destroyGoal() {
                                     class="text-sm font-semibold tabular-nums"
                                     :class="
                                         percentage(goal) >= 100
-                                            ? 'text-emerald-600 dark:text-emerald-400'
+                                            ? 'text-secondary-600 dark:text-secondary-400'
                                             : 'text-gray-500 dark:text-gray-400'
                                     "
                                 >
@@ -577,14 +602,14 @@ function destroyGoal() {
                             >
                                 <span
                                     v-if="percentage(goal) >= 100"
-                                    class="font-semibold text-emerald-600 dark:text-emerald-400"
+                                    class="font-semibold text-secondary-600 dark:text-secondary-400"
                                 >
                                     <i class="fa-solid fa-circle-check"></i>
-                                    Goal reached
+                                    {{ t('Goal reached') }}
                                 </span>
                                 <span v-else>
                                     <span class="icon-saudi_riyal">&#xea;</span
-                                    >{{ money(remaining(goal)) }} to go
+                                    >{{ money(remaining(goal)) }} {{ t('to go') }}
                                 </span>
                                 <span v-if="goal.target_date">
                                     <i class="fa-regular fa-calendar"></i>
@@ -597,7 +622,7 @@ function destroyGoal() {
                                         percentage(goal) < 100
                                     "
                                     class="font-semibold text-rose-500"
-                                    >overdue</span
+                                    >{{ t('overdue') }}</span
                                 >
                             </div>
 
@@ -608,23 +633,23 @@ function destroyGoal() {
                                     min="0.01"
                                     step="0.01"
                                     inputmode="decimal"
-                                    placeholder="Add funds"
+                                    :placeholder="t('Add funds')"
                                     @keyup.enter="addFunds(goal)"
-                                    class="w-full min-w-0 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+                                    class="w-full min-w-0 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
                                 />
                                 <button
                                     @click="addFunds(goal)"
                                     type="button"
-                                    title="Add funds"
-                                    class="shrink-0 rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 active:scale-95"
+                                    :title="t('Add funds')"
+                                    class="shrink-0 rounded-lg bg-secondary-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-secondary-500 active:scale-95"
                                 >
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
                                 <button
                                     @click="startEditing(goal)"
                                     type="button"
-                                    title="Edit goal"
-                                    aria-label="Edit goal"
+                                    :title="t('Edit goal')"
+                                    :aria-label="t('Edit goal')"
                                     class="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-500 transition hover:bg-gray-100 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
                                 >
                                     <i class="fa-solid fa-pen text-xs"></i>
@@ -632,8 +657,8 @@ function destroyGoal() {
                                 <button
                                     @click="confirmDelete(goal)"
                                     type="button"
-                                    title="Delete goal"
-                                    aria-label="Delete goal"
+                                    :title="t('Delete goal')"
+                                    :aria-label="t('Delete goal')"
                                     class="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-lg border border-gray-200 text-gray-400 transition hover:bg-rose-50 hover:text-rose-500 dark:border-gray-700 dark:hover:bg-rose-500/15"
                                 >
                                     <i class="fa-solid fa-trash text-xs"></i>
@@ -646,75 +671,75 @@ function destroyGoal() {
                             <div>
                                 <label
                                     class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400"
-                                    >Name</label
+                                    >{{ t('Name') }}</label
                                 >
                                 <input
                                     type="text"
                                     v-model="editForm.name"
-                                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                 />
                             </div>
                             <div>
                                 <label
                                     class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400"
-                                    >Description</label
+                                    >{{ t('Description') }}</label
                                 >
                                 <textarea
                                     v-model="editForm.description"
                                     rows="2"
-                                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                    class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                 ></textarea>
                             </div>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
                                     <label
                                         class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400"
-                                        >Saved</label
+                                        >{{ t('Saved') }}</label
                                     >
                                     <input
                                         type="number"
                                         v-model="editForm.current_amount"
                                         min="0"
                                         step="0.01"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                     />
                                 </div>
                                 <div>
                                     <label
                                         class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400"
-                                        >Target</label
+                                        >{{ t('Target') }}</label
                                     >
                                     <input
                                         type="number"
                                         v-model="editForm.target_amount"
                                         min="0.01"
                                         step="0.01"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                     />
                                 </div>
                                 <div>
                                     <label
                                         class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400"
-                                        >Target date</label
+                                        >{{ t('Target date') }}</label
                                     >
                                     <input
                                         type="date"
                                         v-model="editForm.target_date"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                     />
                                 </div>
                                 <div>
                                     <label
                                         class="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400"
-                                        >Priority</label
+                                        >{{ t('Priority') }}</label
                                     >
                                     <select
                                         v-model="editForm.priority"
-                                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                                        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                     >
-                                        <option value="high">High</option>
-                                        <option value="medium">Medium</option>
-                                        <option value="low">Low</option>
+                                        <option value="high">{{ t('High') }}</option>
+                                        <option value="medium">{{ t('Medium') }}</option>
+                                        <option value="low">{{ t('Low') }}</option>
                                     </select>
                                 </div>
                             </div>
@@ -722,16 +747,16 @@ function destroyGoal() {
                                 <button
                                     @click="submitEdit(goal)"
                                     type="button"
-                                    class="flex-1 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500 active:scale-95"
+                                    class="flex-1 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-500 active:scale-95"
                                 >
-                                    Save
+                                    {{ t('Save') }}
                                 </button>
                                 <button
                                     @click="cancelEditing"
                                     type="button"
                                     class="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
                                 >
-                                    Cancel
+                                    {{ t('Cancel') }}
                                 </button>
                             </div>
                         </div>
@@ -741,7 +766,7 @@ function destroyGoal() {
                         v-if="goals.length === 0"
                         class="rounded-2xl border border-dashed border-gray-200 py-16 text-center text-sm text-gray-400 sm:col-span-2 dark:border-gray-700 dark:text-gray-500"
                     >
-                        No goals yet. Create one to start tracking your savings.
+                        {{ t('No goals yet. Create one to start tracking your savings.') }}
                     </div>
                 </div>
             </main>
@@ -797,7 +822,7 @@ function destroyGoal() {
                                     id="delete-goal-title"
                                     class="mt-5 text-lg font-bold tracking-tight"
                                 >
-                                    Delete this goal?
+                                    {{ t('Delete this goal?') }}
                                 </h3>
                                 <p
                                     class="mt-1.5 text-sm text-gray-500 dark:text-gray-400"
@@ -806,8 +831,7 @@ function destroyGoal() {
                                         class="font-semibold text-gray-800 dark:text-gray-200"
                                         >{{ goalPendingDelete.name }}</span
                                     >
-                                    will be permanently removed. This can't be
-                                    undone.
+                                    {{ t("will be permanently removed. This can't be undone.") }}
                                 </p>
 
                                 <div
@@ -816,7 +840,7 @@ function destroyGoal() {
                                     <div
                                         class="flex items-baseline justify-between text-xs font-medium text-gray-500 dark:text-gray-400"
                                     >
-                                        <span>Progress lost</span>
+                                        <span>{{ t('Progress lost') }}</span>
                                         <span class="tabular-nums"
                                             >{{
                                                 percentage(goalPendingDelete)
@@ -824,7 +848,7 @@ function destroyGoal() {
                                         >
                                     </div>
                                     <p
-                                        class="mt-1 text-left text-lg font-bold tabular-nums"
+                                        class="mt-1 text-start text-lg font-bold tabular-nums"
                                     >
                                         <span class="icon-saudi_riyal"
                                             >&#xea;</span
@@ -869,7 +893,7 @@ function destroyGoal() {
                                     :disabled="deleting"
                                     class="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-100 active:scale-95 disabled:opacity-60 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
                                 >
-                                    Keep it
+                                    {{ t('Keep it') }}
                                 </button>
                                 <button
                                     @click="destroyGoal"
@@ -881,7 +905,7 @@ function destroyGoal() {
                                         v-if="deleting"
                                         class="fa-solid fa-spinner animate-spin text-xs"
                                     ></i>
-                                    {{ deleting ? 'Deleting' : 'Delete' }}
+                                    {{ deleting ? t('Deleting') : t('Delete') }}
                                 </button>
                             </div>
                         </div>

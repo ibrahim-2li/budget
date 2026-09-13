@@ -56,7 +56,7 @@ class DashboardController extends Controller
 
                 return [
                     'period' => $start->format('Y-m'),
-                    'label' => $start->format('M'),
+                    'label' => $start->translatedFormat('M'),
                     'income' => (float) Income::whereBetween('created_at', [$start, $end])->sum('amount'),
                     'expenses' => (float) Expense::whereBetween('created_at', [$start, $end])->sum('amount'),
                 ];

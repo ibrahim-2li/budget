@@ -5,9 +5,37 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+@theme {
+    /* primary — anchored on #10a9c6 at primary-600 (hue 216.1) */
+    --color-primary-50: oklch(0.977 0.0130 216.13); /* #eefafd */
+    --color-primary-100: oklch(0.955 0.0260 216.13); /* #def5fb */
+    --color-primary-200: oklch(0.917 0.0497 216.13); /* #bfecf9 */
+    --color-primary-300: oklch(0.859 0.0781 216.13); /* #94def1 */
+    --color-primary-400: oklch(0.792 0.1041 216.13); /* #62cce6 */
+    --color-primary-500: oklch(0.733 0.1183 216.13); /* #33bbd8 */
+    --color-primary-600: oklch(0.678 0.1183 216.13); /* #10a9c6 */
+    --color-primary-700: oklch(0.578 0.1028 216.13); /* #0088a1 */
+    --color-primary-800: oklch(0.486 0.0865 216.13); /* #006b7f */
+    --color-primary-900: oklch(0.412 0.0733 216.13); /* #005464 */
+    --color-primary-950: oklch(0.281 0.0502 216.13); /* #002f39 */
+
+    /* secondary — anchored on #57ad65 at secondary-500 (hue 147.5) */
+    --color-secondary-50: oklch(0.977 0.0148 147.47); /* #f1faf2 */
+    --color-secondary-100: oklch(0.950 0.0295 147.47); /* #e2f4e3 */
+    --color-secondary-200: oklch(0.902 0.0563 147.47); /* #c7eaca */
+    --color-secondary-300: oklch(0.831 0.0885 147.47); /* #a1d8a7 */
+    --color-secondary-400: oklch(0.748 0.1181 147.47); /* #78c282 */
+    --color-secondary-500: oklch(0.676 0.1342 147.47); /* #57ad65 */
+    --color-secondary-600: oklch(0.605 0.1342 147.47); /* #409750 */
+    --color-secondary-700: oklch(0.523 0.1248 147.47); /* #2c7d3d */
+    --color-secondary-800: oklch(0.448 0.1100 147.47); /* #1f652e */
+    --color-secondary-900: oklch(0.388 0.0953 147.47); /* #185224 */
+    --color-secondary-950: oklch(0.281 0.0711 147.47); /* #0a3213 */
+}
+
 @theme inline {
     --font-sans:
-        Instrument Sans, ui-sans-serif, system-ui, sans-serif,
+        Instrument Sans, 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
 }
@@ -23,4 +51,9 @@
 
 .icon-saudi_riyal {
     font-family: 'SaudiRiyalSymbol', sans-serif;
+}
+
+/* Letter-spacing breaks the joins between Arabic glyphs. */
+[dir='rtl'] [class*='tracking-'] {
+    letter-spacing: normal;
 }

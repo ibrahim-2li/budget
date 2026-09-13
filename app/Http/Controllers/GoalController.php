@@ -30,7 +30,7 @@ class GoalController extends Controller
 
         auth()->user()->goals()->create($data);
 
-        return redirect()->route('goals.index')->with('success', 'Goal created successfully!');
+        return redirect()->route('goals.index')->with('success', __('Goal created successfully!'));
     }
 
     public function update(Request $request, Goal $goal): RedirectResponse
@@ -51,7 +51,7 @@ class GoalController extends Controller
 
         $goal->update($data);
 
-        return back()->with('success', 'Goal updated successfully!');
+        return back()->with('success', __('Goal updated successfully!'));
     }
 
     public function destroy(Goal $goal): RedirectResponse
@@ -63,6 +63,6 @@ class GoalController extends Controller
 
         $goal->delete();
 
-        return back()->with('success', 'Goal deleted successfully!');
+        return back()->with('success', __('Goal deleted successfully!'));
     }
 }

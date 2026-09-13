@@ -35,26 +35,26 @@ class CategoryController extends Controller
     {
         Category::create($request->validated());
 
-        return back()->with('success', 'Category created.');
+        return back()->with('success', __('Category created.'));
     }
 
     public function update(UpdateCategoryRequest $request, Category $category): RedirectResponse
     {
         $category->update($request->validated());
 
-        return back()->with('success', 'Category updated.');
+        return back()->with('success', __('Category updated.'));
     }
 
     public function destroy(Category $category): RedirectResponse
     {
         if ($category->income()->exists() || $category->expense()->exists()) {
             return back()->withErrors([
-                'category' => 'This category is still used by income or expense entries.',
+                'category' => __('This category is still used by income or expense entries.'),
             ]);
         }
 
         $category->delete();
 
-        return back()->with('success', 'Category deleted.');
+        return back()->with('success', __('Category deleted.'));
     }
 }

@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
 import AdminLayout from '@/layouts/AdminLayout.vue'
+import { useI18n } from '@/lib/i18n'
 import { users as usersRoute } from '@/routes/admin'
 
 const props = defineProps({
@@ -9,6 +10,8 @@ const props = defineProps({
     recentUsers: { type: Array, required: true },
     monthlyActivity: { type: Array, required: true },
 })
+
+const { t } = useI18n()
 
 function money(value) {
     return Number(value || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -27,24 +30,24 @@ function barHeight(value: number) {
 }
 
 const cards = computed(() => [
-    { label: 'Users', value: String(props.stats.users), hint: `+${props.stats.newUsersThisMonth} this month`, icon: 'fa-solid fa-users', tone: 'indigo' },
-    { label: 'Categories', value: String(props.stats.categories), hint: 'Income & expense', icon: 'fa-solid fa-tags', tone: 'sky' },
-    { label: 'Income logged', value: money(props.stats.totalIncome), hint: `${props.stats.incomeEntries} entries`, icon: 'fa-solid fa-arrow-down', tone: 'emerald', currency: true },
-    { label: 'Expenses logged', value: money(props.stats.totalExpenses), hint: `${props.stats.expenseEntries} entries`, icon: 'fa-solid fa-arrow-up', tone: 'rose', currency: true },
+    { label: t('Users'), value: String(props.stats.users), hint: t('+:count this month', { count: props.stats.newUsersThisMonth }), icon: 'fa-solid fa-users', tone: 'primary' },
+    { label: t('Categories'), value: String(props.stats.categories), hint: t('Income & expense'), icon: 'fa-solid fa-tags', tone: 'sky' },
+    { label: t('Income logged'), value: money(props.stats.totalIncome), hint: t(':count entries', { count: props.stats.incomeEntries }), icon: 'fa-solid fa-arrow-down', tone: 'secondary', currency: true },
+    { label: t('Expenses logged'), value: money(props.stats.totalExpenses), hint: t(':count entries', { count: props.stats.expenseEntries }), icon: 'fa-solid fa-arrow-up', tone: 'rose', currency: true },
 ])
 
 const toneClasses: Record<string, string> = {
-    indigo: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400',
+    primary: 'bg-primary-50 text-primary-600 dark:bg-primary-500/15 dark:text-primary-400',
     sky: 'bg-sky-50 text-sky-600 dark:bg-sky-500/15 dark:text-sky-400',
-    emerald: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400',
+    secondary: 'bg-secondary-50 text-secondary-600 dark:bg-secondary-500/15 dark:text-secondary-400',
     rose: 'bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-400',
 }
 </script>
 
 <template>
-    <Head title="Admin dashboard" />
+    <Head :title="t('Admin dashboard')" />
 
-    <AdminLayout title="Dashboard" subtitle="Activity across every account.">
+    <AdminLayout :title="t('Dashboard')" :subtitle="t('Activity across every account.')">
         <!-- Stat cards -->
         <div class="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             <div v-for="card in cards" :key="card.label"
@@ -68,12 +71,12 @@ const toneClasses: Record<string, string> = {
                 class="rounded-2xl border border-gray-200 bg-white shadow-sm lg:col-span-2 dark:border-gray-800 dark:bg-gray-900">
                 <header
                     class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-4 py-3.5 sm:px-5 dark:border-gray-800">
-                    <h2 class="text-base font-semibold">Last 6 months</h2>
+                    <h2 class="text-base font-semibold">{{ t('Last 6 months') }}</h2>
                     <div class="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                         <span class="flex items-center gap-1.5"><span
-                                class="h-2 w-2 rounded-full bg-emerald-500"></span>Income</span>
+                                class="h-2 w-2 rounded-full bg-secondary-500"></span>{{ t('Income') }}</span>
                         <span class="flex items-center gap-1.5"><span
-                                class="h-2 w-2 rounded-full bg-rose-500"></span>Expenses</span>
+                                class="h-2 w-2 rounded-full bg-rose-500"></span>{{ t('Expenses') }}</span>
                     </div>
                 </header>
 
@@ -82,21 +85,21 @@ const toneClasses: Record<string, string> = {
                         <div v-for="month in monthlyActivity" :key="month.period"
                             class="flex h-full flex-1 flex-col items-center justify-end gap-2">
                             <div class="flex h-full w-full items-end justify-center gap-1">
-                                <div class="w-1/3 rounded-t bg-emerald-500 transition-all"
+                                <div class="w-1/3 rounded-t bg-secondary-500 transition-all"
                                     :style="{ height: barHeight(month.income) }"
-                                    :title="'Income: ' + money(month.income)"></div>
+                                    :title="t('Income: :amount', { amount: money(month.income) })"></div>
                                 <div class="w-1/3 rounded-t bg-rose-500 transition-all"
                                     :style="{ height: barHeight(month.expenses) }"
-                                    :title="'Expenses: ' + money(month.expenses)"></div>
+                                    :title="t('Expenses: :amount', { amount: money(month.expenses) })"></div>
                             </div>
                             <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ month.label }}</span>
                         </div>
                     </div>
 
                     <div class="mt-5 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
-                        <span class="text-sm text-gray-500 dark:text-gray-400">Net across all users</span>
+                        <span class="text-sm text-gray-500 dark:text-gray-400">{{ t('Net across all users') }}</span>
                         <span class="text-lg font-bold tabular-nums"
-                            :class="netTotal >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'">
+                            :class="netTotal >= 0 ? 'text-secondary-600 dark:text-secondary-400' : 'text-rose-600 dark:text-rose-400'">
                             <span class="icon-saudi_riyal">&#xea;</span>{{ money(netTotal) }}
                         </span>
                     </div>
@@ -107,9 +110,9 @@ const toneClasses: Record<string, string> = {
             <section class="rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
                 <header
                     class="flex items-center justify-between border-b border-gray-100 px-4 py-3.5 sm:px-5 dark:border-gray-800">
-                    <h2 class="text-base font-semibold">Newest users</h2>
+                    <h2 class="text-base font-semibold">{{ t('Newest users') }}</h2>
                     <Link :href="usersRoute.url()"
-                        class="text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400">View all</Link>
+                        class="text-xs font-medium text-primary-600 hover:underline dark:text-primary-400">{{ t('View all') }}</Link>
                 </header>
 
                 <ul class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -125,7 +128,7 @@ const toneClasses: Record<string, string> = {
                         <span class="shrink-0 text-xs text-gray-400 dark:text-gray-500">{{ user.created_at }}</span>
                     </li>
                     <li v-if="recentUsers.length === 0" class="px-5 py-8 text-center text-sm text-gray-400">
-                        No users yet.
+                        {{ t('No users yet.') }}
                     </li>
                 </ul>
             </section>

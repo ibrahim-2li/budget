@@ -9,10 +9,10 @@
     >
       <div class="flex items-center gap-2" v-if="selectedCategory">
         <i :class="[selectedCategory.icon, selectedCategory.color]"></i>
-        <span>{{ selectedCategory.name }}</span>
+        <span>{{ t(selectedCategory.name) }}</span>
       </div>
       <div v-else class="text-gray-400 dark:text-gray-500">
-        Select Category
+        {{ t('Select Category') }}
       </div>
       <i class="fa-solid fa-chevron-down text-gray-400"></i>
     </button>
@@ -29,7 +29,7 @@
           class="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-600"
         >
           <i :class="[category.icon, category.color]" class="w-5 text-center"></i>
-          <span>{{ category.name }}</span>
+          <span>{{ t(category.name) }}</span>
         </li>
       </ul>
     </div>
@@ -38,6 +38,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useI18n } from '@/lib/i18n'
 
 const props = defineProps({
   modelValue: {
@@ -59,6 +60,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:modelValue'])
+
+const { t } = useI18n()
 
 const isOpen = ref(false)
 const dropdownRef = ref<HTMLElement | null>(null)

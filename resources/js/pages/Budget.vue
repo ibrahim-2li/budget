@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { Form, Link } from '@inertiajs/vue3';
-import CategorySelect from '../components/CategorySelect.vue';
-import AppSidebar from '@/components/AppSidebar.vue';
 import { router } from '@inertiajs/vue3';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
+import AppLogo from '@/components/AppLogo.vue';
+import AppSidebar from '@/components/AppSidebar.vue';
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import { useI18n } from '@/lib/i18n';
+import CategorySelect from '../components/CategorySelect.vue';
 
+const { t, intlLocale } = useI18n();
 
 const isDark = ref(false);
-const navOpen = ref(false);
 const selectedIncomeCategory = ref('');
 const selectedExpenseCategory = ref('');
 
@@ -37,7 +40,10 @@ const balance = computed(() => props.totalIncome - props.totalExpenses);
 
 /** Percentage of income already spent, capped at 100 for the progress bar. */
 const spentPercent = computed(() => {
-    if (!props.totalIncome) return props.totalExpenses > 0 ? 100 : 0;
+    if (!props.totalIncome) {
+return props.totalExpenses > 0 ? 100 : 0;
+}
+
     return Math.min(
         100,
         Math.round((props.totalExpenses / props.totalIncome) * 100),
@@ -56,14 +62,14 @@ function money(value) {
 const dateObj = computed(() => new Date(props.currentPeriod + '-01T00:00:00'));
 
 const formattedPeriod = computed(() => {
-    return dateObj.value.toLocaleDateString('en-US', {
+    return dateObj.value.toLocaleDateString(intlLocale.value, {
         month: 'long',
         year: 'numeric',
     });
 });
 
 const shortPeriod = computed(() => {
-    return dateObj.value.toLocaleDateString('en-US', {
+    return dateObj.value.toLocaleDateString(intlLocale.value, {
         month: 'short',
         year: 'numeric',
     });
@@ -74,6 +80,7 @@ const prevPeriod = computed(() => {
     d.setMonth(d.getMonth() - 1);
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
+
     return y + '-' + m;
 });
 
@@ -82,6 +89,7 @@ const nextPeriod = computed(() => {
     d.setMonth(d.getMonth() + 1);
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
+
     return y + '-' + m;
 });
 
@@ -123,8 +131,12 @@ function calcInput(value) {
     }
 
     if (value === '.') {
-        if (calcDisplay.value.includes('.')) return;
+        if (calcDisplay.value.includes('.')) {
+return;
+}
+
         calcDisplay.value += '.';
+
         return;
     }
 
@@ -133,13 +145,16 @@ function calcInput(value) {
 }
 
 function calcOperator(operator) {
-    if (calcDisplay.value === 'Error') return;
+    if (calcDisplay.value === 'Error') {
+return;
+}
 
     if (justEvaluated.value) {
         // Chain off the result instead of starting over.
         calcExpression.value = calcDisplay.value + ' ' + operator + ' ';
         justEvaluated.value = false;
         awaitingOperand.value = true;
+
         return;
     }
 
@@ -149,6 +164,7 @@ function calcOperator(operator) {
             /[+\-×÷] $/,
             operator + ' ',
         );
+
         return;
     }
 
@@ -166,6 +182,7 @@ function calcClear() {
 function calcDelete() {
     if (justEvaluated.value) {
         calcClear();
+
         return;
     }
 
@@ -173,6 +190,7 @@ function calcDelete() {
         // Undo the pending operator and keep editing the previous operand.
         calcExpression.value = calcExpression.value.replace(/[+\-×÷] $/, '');
         awaitingOperand.value = false;
+
         return;
     }
 
@@ -181,7 +199,9 @@ function calcDelete() {
 }
 
 function calcEvaluate() {
-    if (!calcExpression.value) return;
+    if (!calcExpression.value) {
+return;
+}
 
     // A trailing operator has no right-hand operand yet, so drop it.
     const full = awaitingOperand.value
@@ -194,7 +214,7 @@ function calcEvaluate() {
         .replace(/[^0-9+\-*/.() ]/g, '');
 
     try {
-        // eslint-disable-next-line no-new-func
+         
         const result = Function('"use strict"; return (' + sanitized + ')')();
         const rounded = parseFloat(result.toFixed(10));
         calcDisplay.value = isFinite(rounded) ? String(rounded) : 'Error';
@@ -217,54 +237,81 @@ const calcButtons = [
 
 function calcButtonClass(btn) {
     const base = 'rounded-xl font-semibold transition active:scale-95';
-    if (btn === '=')
-        return `${base} col-span-2 bg-indigo-600 text-white text-lg hover:bg-indigo-500`;
-    if (btn === 'C')
-        return `${base} bg-rose-100 text-rose-600 hover:bg-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:hover:bg-rose-500/25`;
-    if (btn === '⌫')
-        return `${base} bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600`;
-    if (['+', '-', '×', '÷', '%'].includes(btn))
-        return `${base} bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-500/15 dark:text-indigo-300 dark:hover:bg-indigo-500/25`;
+
+    if (btn === '=') {
+return `${base} col-span-2 bg-primary-600 text-white text-lg hover:bg-primary-500`;
+}
+
+    if (btn === 'C') {
+return `${base} bg-rose-100 text-rose-600 hover:bg-rose-200 dark:bg-rose-500/15 dark:text-rose-300 dark:hover:bg-rose-500/25`;
+}
+
+    if (btn === '⌫') {
+return `${base} bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600`;
+}
+
+    if (['+', '-', '×', '÷', '%'].includes(btn)) {
+return `${base} bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-500/15 dark:text-primary-300 dark:hover:bg-primary-500/25`;
+}
+
     return `${base} bg-gray-100 text-gray-800 font-medium hover:bg-gray-200 dark:bg-gray-700/60 dark:text-gray-100 dark:hover:bg-gray-700`;
 }
 
 function calcPress(btn) {
     if (btn === 'C') {
         calcClear();
+
         return;
     }
+
     if (btn === '⌫') {
         calcDelete();
+
         return;
     }
+
     if (btn === '=') {
         calcEvaluate();
+
         return;
     }
+
     if (operators.includes(btn)) {
         calcOperator(btn);
+
         return;
     }
+
     if (btn === '%') {
         const val = parseFloat(calcDisplay.value);
-        if (isNaN(val)) return;
+
+        if (isNaN(val)) {
+return;
+}
+
         calcDisplay.value = String(val / 100);
         justEvaluated.value = false;
         awaitingOperand.value = false;
+
         return;
     }
+
     calcInput(btn);
 }
 
 function handleKeydown(e) {
     if (e.key === 'Escape') {
-        navOpen.value = false;
     }
-    if (!calcOpen.value) return;
+
+    if (!calcOpen.value) {
+return;
+}
 
     const key = e.key;
+
     if (e.key === 'Escape') {
         calcOpen.value = false;
+
         return;
     }
 
@@ -296,6 +343,7 @@ function handleKeydown(e) {
         ].includes(key)
             ? key
             : null);
+
     if (mapped) {
         e.preventDefault();
         calcPress(mapped);
@@ -318,42 +366,31 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                 class="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:h-16 sm:px-6"
             >
                 <div class="flex items-center gap-2.5">
-                    <button
-                        type="button"
-                        @click="navOpen = true"
-                        aria-label="Open navigation"
-                        class="-ml-1 flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 lg:hidden dark:text-gray-400 dark:hover:bg-gray-800"
-                    >
-                        <i class="fa-solid fa-bars"></i>
-                    </button>
                     <a href="/">
                         <span
                             class="flex h-10 w-10 items-center justify-center rounded-2xl text-sm text-white shadow-sm"
                         >
                             <!-- <i class="fa-solid fa-wallet"></i> -->
-                            <img
-                                src="/images/logo.ico"
-                                alt="logo"
-                                class="h-8 w-8"
-                            />
+                            <AppLogo size="h-8 w-8" />
                         </span>
                     </a>
                     <a href="/"
                         ><span
                             class="text-base font-bold tracking-tight sm:text-lg"
-                            >Budget</span
+                            >{{ t('Budget') }}</span
                         ></a
                     >
                 </div>
                 <div class="flex items-center gap-1.5 sm:gap-2">
+                    <LanguageSwitcher />
                     <button
                         @click="toggleDark"
                         type="button"
                         class="flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
                         :aria-label="
                             isDark
-                                ? 'Switch to light mode'
-                                : 'Switch to dark mode'
+                                ? t('Switch to light mode')
+                                : t('Switch to dark mode')
                         "
                     >
                         <svg
@@ -394,16 +431,16 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                         class="flex h-9 items-center gap-2 rounded-lg border border-gray-200 px-3 text-sm font-medium text-gray-600 transition hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
                     >
                         <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                        <span class="hidden sm:inline">Logout</span>
+                        <span class="hidden sm:inline">{{ t('Logout') }}</span>
                     </Link>
                 </div>
             </div>
         </nav>
 
         <div
-            class="mx-auto flex max-w-6xl gap-6 px-4 pt-5 pb-28 sm:px-6 sm:pt-8 sm:pb-16"
+            class="mx-auto flex max-w-6xl gap-6 px-4 pt-5 pb-28 sm:px-6 sm:pt-8 lg:pb-16"
         >
-            <AppSidebar v-model:open="navOpen" />
+            <AppSidebar />
 
             <main class="min-w-0 flex-1">
                 <!-- Month Navigation -->
@@ -414,7 +451,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                         <p
                             class="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400"
                         >
-                            Overview
+                            {{ t('Overview') }}
                         </p>
                         <h1
                             class="text-xl font-bold tracking-tight sm:text-2xl"
@@ -431,18 +468,18 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                         <Link
                             :href="'/budget?period=' + prevPeriod"
                             preserve-scroll
-                            aria-label="Previous month"
+                            :aria-label="t('Previous month')"
                             class="flex h-9 w-9 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                         >
-                            <i class="fa-solid fa-chevron-left text-sm"></i>
+                            <i class="fa-solid fa-chevron-left text-sm rtl:rotate-180"></i>
                         </Link>
                         <Link
                             :href="'/budget?period=' + nextPeriod"
                             preserve-scroll
-                            aria-label="Next month"
+                            :aria-label="t('Next month')"
                             class="flex h-9 w-9 items-center justify-center rounded-lg text-gray-600 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
                         >
-                            <i class="fa-solid fa-chevron-right text-sm"></i>
+                            <i class="fa-solid fa-chevron-right text-sm rtl:rotate-180"></i>
                         </Link>
                     </div>
                 </div>
@@ -456,7 +493,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                             <p
                                 class="text-sm font-medium text-gray-500 dark:text-gray-400"
                             >
-                                Remaining balance
+                                {{ t('Remaining balance') }}
                             </p>
                             <p
                                 class="mt-1 text-3xl font-bold tracking-tight tabular-nums sm:text-4xl"
@@ -475,10 +512,10 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                             :class="
                                 isOverspending
                                     ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/15 dark:text-rose-300'
-                                    : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-300'
+                                    : 'bg-secondary-50 text-secondary-600 dark:bg-secondary-500/15 dark:text-secondary-300'
                             "
                         >
-                            {{ spentPercent }}% of income spent
+                            {{ t(':percent% of income spent', { percent: spentPercent }) }}
                         </span>
                     </div>
 
@@ -490,7 +527,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                             :class="
                                 isOverspending
                                     ? 'bg-rose-500'
-                                    : 'bg-emerald-500'
+                                    : 'bg-secondary-500'
                             "
                             :style="{ width: spentPercent + '%' }"
                         ></div>
@@ -504,18 +541,18 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                     >
                         <div class="flex items-center gap-2">
                             <span
-                                class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400"
+                                class="flex h-8 w-8 items-center justify-center rounded-lg bg-secondary-50 text-secondary-600 dark:bg-secondary-500/15 dark:text-secondary-400"
                             >
                                 <i class="fa-solid fa-arrow-down text-xs"></i>
                             </span>
                             <p
                                 class="text-xs font-medium text-gray-500 sm:text-sm dark:text-gray-400"
                             >
-                                Income
+                                {{ t('Income') }}
                             </p>
                         </div>
                         <p
-                            class="mt-2 text-xl font-bold tracking-tight text-emerald-600 tabular-nums sm:text-2xl dark:text-emerald-400"
+                            class="mt-2 text-xl font-bold tracking-tight text-secondary-600 tabular-nums sm:text-2xl dark:text-secondary-400"
                         >
                             <span class="icon-saudi_riyal">&#xea;</span
                             >{{ money(totalIncome) }}
@@ -534,7 +571,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                             <p
                                 class="text-xs font-medium text-gray-500 sm:text-sm dark:text-gray-400"
                             >
-                                Expenses
+                                {{ t('Expenses') }}
                             </p>
                         </div>
                         <p
@@ -558,13 +595,13 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                                 class="flex items-center gap-2 text-base font-semibold"
                             >
                                 <span
-                                    class="h-2 w-2 rounded-full bg-emerald-500"
+                                    class="h-2 w-2 rounded-full bg-secondary-500"
                                 ></span>
-                                Income
+                                {{ t('Income') }}
                             </h2>
                             <span
                                 class="text-xs font-medium text-gray-400 dark:text-gray-500"
-                                >{{ incomes.length }} entries</span
+                                >{{ t(':count entries', { count: incomes.length }) }}</span
                             >
                         </header>
 
@@ -593,11 +630,11 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                                     <input
                                         type="number"
                                         name="amount"
-                                        placeholder="Amount"
+                                        :placeholder="t('Amount')"
                                         min="0.01"
                                         step="0.01"
                                         inputmode="decimal"
-                                        class="w-full min-w-0 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none sm:w-28 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
+                                        class="w-full min-w-0 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition focus:border-secondary-500 focus:ring-2 focus:ring-secondary-500/20 focus:outline-none sm:w-28 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
                                         :class="{
                                             'border-rose-400': errors.amount,
                                         }"
@@ -605,9 +642,9 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                                     <button
                                         type="submit"
                                         :disabled="processing"
-                                        class="shrink-0 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 active:scale-95 disabled:opacity-60"
+                                        class="shrink-0 rounded-lg bg-secondary-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-secondary-500 active:scale-95 disabled:opacity-60"
                                     >
-                                        Add
+                                        {{ t('Add') }}
                                     </button>
                                 </div>
                             </Form>
@@ -640,12 +677,12 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                                         {{
                                             income.name ||
                                             (income.category
-                                                ? income.category.name
-                                                : 'Unknown')
+                                                ? t(income.category.name)
+                                                : t('Unknown'))
                                         }}
                                     </span>
                                     <span
-                                        class="shrink-0 text-sm font-semibold text-emerald-600 tabular-nums dark:text-emerald-400"
+                                        class="shrink-0 text-sm font-semibold text-secondary-600 tabular-nums dark:text-secondary-400"
                                     >
                                         +<span class="icon-saudi_riyal"
                                             >&#xea;</span
@@ -654,8 +691,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                                     <button
                                         @click="deleteIncome(income.id)"
                                         type="button"
-                                        title="Delete"
-                                        aria-label="Delete income"
+                                        :title="t('Delete')"
+                                        :aria-label="t('Delete income')"
                                         class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/15"
                                     >
                                         <i
@@ -667,7 +704,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                                     v-if="incomes.length === 0"
                                     class="rounded-xl border border-dashed border-gray-200 py-8 text-center text-sm text-gray-400 dark:border-gray-700 dark:text-gray-500"
                                 >
-                                    No income added yet.
+                                    {{ t('No income added yet.') }}
                                 </li>
                             </ul>
                         </div>
@@ -686,11 +723,11 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                                 <span
                                     class="h-2 w-2 rounded-full bg-rose-500"
                                 ></span>
-                                Expenses
+                                {{ t('Expenses') }}
                             </h2>
                             <span
                                 class="text-xs font-medium text-gray-400 dark:text-gray-500"
-                                >{{ expenses.length }} entries</span
+                                >{{ t(':count entries', { count: expenses.length }) }}</span
                             >
                         </header>
 
@@ -719,7 +756,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                                     <input
                                         type="number"
                                         name="amount"
-                                        placeholder="Amount"
+                                        :placeholder="t('Amount')"
                                         min="0.01"
                                         step="0.01"
                                         inputmode="decimal"
@@ -733,7 +770,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                                         :disabled="processing"
                                         class="shrink-0 rounded-lg bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-500 active:scale-95 disabled:opacity-60"
                                     >
-                                        Add
+                                        {{ t('Add') }}
                                     </button>
                                 </div>
                             </Form>
@@ -766,8 +803,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                                         {{
                                             expense.name ||
                                             (expense.category
-                                                ? expense.category.name
-                                                : 'Unknown')
+                                                ? t(expense.category.name)
+                                                : t('Unknown'))
                                         }}
                                     </span>
                                     <span
@@ -780,8 +817,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                                     <button
                                         @click="deleteExpense(expense.id)"
                                         type="button"
-                                        title="Delete"
-                                        aria-label="Delete expense"
+                                        :title="t('Delete')"
+                                        :aria-label="t('Delete expense')"
                                         class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-gray-400 transition hover:bg-rose-50 hover:text-rose-500 dark:hover:bg-rose-500/15"
                                     >
                                         <i
@@ -793,7 +830,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                                     v-if="expenses.length === 0"
                                     class="rounded-xl border border-dashed border-gray-200 py-8 text-center text-sm text-gray-400 dark:border-gray-700 dark:text-gray-500"
                                 >
-                                    No expenses added yet.
+                                    {{ t('No expenses added yet.') }}
                                 </li>
                             </ul>
                         </div>
@@ -806,8 +843,8 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
         <button
             @click="calcOpen = !calcOpen"
             type="button"
-            title="Calculator"
-            class="fixed right-4 bottom-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition hover:bg-indigo-500 active:scale-95 sm:right-6 sm:bottom-6"
+            :title="t('Calculator')"
+            class="fixed end-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary-600 text-white shadow-lg shadow-primary-600/30 transition hover:bg-primary-500 active:scale-95 sm:end-6 lg:bottom-6"
         >
             <svg
                 v-if="!calcOpen"
@@ -930,10 +967,10 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
         >
             <div
                 v-if="calcOpen"
-                class="fixed inset-x-3 bottom-20 z-40 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl sm:inset-x-auto sm:right-6 sm:bottom-24 sm:w-72 dark:border-gray-800 dark:bg-gray-900"
+                class="fixed inset-x-3 bottom-[calc(9rem+env(safe-area-inset-bottom))] z-40 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl sm:inset-x-auto sm:end-6 sm:w-72 lg:bottom-24 dark:border-gray-800 dark:bg-gray-900"
             >
                 <!-- Display -->
-                <div class="bg-gray-900 px-4 pt-4 pb-3 dark:bg-gray-800">
+                <div dir="ltr" class="bg-gray-900 px-4 pt-4 pb-3 dark:bg-gray-800">
                     <p
                         class="min-h-5 truncate text-right text-xs text-gray-400"
                     >
@@ -947,7 +984,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
                 </div>
 
                 <!-- Buttons -->
-                <div class="grid grid-cols-4 gap-2 p-3">
+                <div dir="ltr" class="grid grid-cols-4 gap-2 p-3">
                     <template v-for="row in calcButtons" :key="row.join()">
                         <button
                             v-for="btn in row"

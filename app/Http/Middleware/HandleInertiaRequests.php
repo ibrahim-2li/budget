@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -38,6 +39,8 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'locale' => fn (): string => App::getLocale(),
+            'translations' => fn (): array => $this->translations(App::getLocale()),
             'auth' => [
                 'user' => $request->user()?->only(['id', 'name', 'email']),
                 'isAdmin' => (bool) $request->user()?->isAdmin(),
@@ -46,5 +49,21 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
             ],
         ];
+    }
+
+    /**
+     * Load the JSON translations for the given locale.
+     *
+     * @return array<string, string>
+     */
+    protected function translations(string $locale): array
+    {
+        $path = lang_path("{$locale}.json");
+
+        if (! is_file($path)) {
+            return [];
+        }
+
+        return json_decode(file_get_contents($path), true) ?? [];
     }
 }

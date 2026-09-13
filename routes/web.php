@@ -6,9 +6,12 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\GoalController;
+use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
+
+Route::post('/locale/{locale}', LocaleController::class)->name('locale.update');
 
 // Guest routes
 Route::middleware('guest')->group(function () {

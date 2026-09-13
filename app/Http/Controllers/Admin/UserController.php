@@ -52,11 +52,11 @@ class UserController extends Controller
     public function updateRole(UpdateUserRoleRequest $request, User $user): RedirectResponse
     {
         if ($user->is($request->user())) {
-            return back()->withErrors(['role_id' => 'You cannot change your own role.']);
+            return back()->withErrors(['role_id' => __('You cannot change your own role.')]);
         }
 
         $user->update($request->validated());
 
-        return back()->with('success', "Updated {$user->name}'s role.");
+        return back()->with('success', __('Updated :name\'s role.', ['name' => $user->name]));
     }
 }

@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import AdminLayout from '@/layouts/AdminLayout.vue'
+import { useI18n } from '@/lib/i18n'
 import { users as usersRoute } from '@/routes/admin'
 import { role as updateRole } from '@/routes/admin/users'
 
@@ -12,6 +13,7 @@ const props = defineProps({
 })
 
 const page = usePage()
+const { t } = useI18n()
 const currentUserId = page.props.auth?.user?.id
 
 const search = ref(props.filters.search ?? '')
@@ -36,30 +38,30 @@ function changeRole(user, roleId) {
 </script>
 
 <template>
-    <Head title="Users" />
+    <Head :title="t('Users')" />
 
-    <AdminLayout title="Users" :subtitle="`${users.total} registered ${users.total === 1 ? 'account' : 'accounts'}`">
+    <AdminLayout :title="t('Users')" :subtitle="t(users.total === 1 ? ':count registered account' : ':count registered accounts', { count: users.total })">
         <template #actions>
             <div class="relative w-full sm:w-64">
-                <i class="fa-solid fa-magnifying-glass absolute top-1/2 left-3 -translate-y-1/2 text-sm text-gray-400"></i>
-                <input v-model="search" type="search" placeholder="Search name or email"
-                    class="w-full rounded-lg border border-gray-300 bg-white py-2 pr-3 pl-9 text-sm placeholder-gray-400 transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
+                <i class="fa-solid fa-magnifying-glass absolute top-1/2 start-3 -translate-y-1/2 text-sm text-gray-400"></i>
+                <input v-model="search" type="search" :placeholder="t('Search name or email')"
+                    class="w-full rounded-lg border border-gray-300 bg-white py-2 pe-3 ps-9 text-sm placeholder-gray-400 transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white" />
             </div>
         </template>
 
         <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
             <!-- Desktop table -->
             <div class="hidden overflow-x-auto md:block">
-                <table class="w-full text-left text-sm">
+                <table class="w-full text-start text-sm">
                     <thead
                         class="border-b border-gray-100 text-xs font-medium tracking-wide text-gray-500 uppercase dark:border-gray-800 dark:text-gray-400">
                         <tr>
-                            <th class="px-5 py-3">User</th>
-                            <th class="px-5 py-3 text-right">Income</th>
-                            <th class="px-5 py-3 text-right">Expenses</th>
-                            <th class="px-5 py-3 text-right">Entries</th>
-                            <th class="px-5 py-3">Joined</th>
-                            <th class="px-5 py-3">Role</th>
+                            <th class="px-5 py-3">{{ t('User') }}</th>
+                            <th class="px-5 py-3 text-end">{{ t('Income') }}</th>
+                            <th class="px-5 py-3 text-end">{{ t('Expenses') }}</th>
+                            <th class="px-5 py-3 text-end">{{ t('Entries') }}</th>
+                            <th class="px-5 py-3">{{ t('Joined') }}</th>
+                            <th class="px-5 py-3">{{ t('Role') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -75,32 +77,32 @@ function changeRole(user, roleId) {
                                         <p class="truncate font-medium">
                                             {{ user.name }}
                                             <span v-if="user.id === currentUserId"
-                                                class="ml-1 rounded bg-indigo-50 px-1.5 py-0.5 text-xs font-medium text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">You</span>
+                                                class="ms-1 rounded bg-primary-50 px-1.5 py-0.5 text-xs font-medium text-primary-600 dark:bg-primary-500/15 dark:text-primary-400">{{ t('You') }}</span>
                                         </p>
                                         <p class="truncate text-xs text-gray-500 dark:text-gray-400">{{ user.email }}</p>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-5 py-3 text-right font-medium tabular-nums text-emerald-600 dark:text-emerald-400">
+                            <td class="px-5 py-3 text-end font-medium tabular-nums text-secondary-600 dark:text-secondary-400">
                                 <span class="icon-saudi_riyal">&#xea;</span>{{ money(user.incomes_total) }}
                             </td>
-                            <td class="px-5 py-3 text-right font-medium tabular-nums text-rose-600 dark:text-rose-400">
+                            <td class="px-5 py-3 text-end font-medium tabular-nums text-rose-600 dark:text-rose-400">
                                 <span class="icon-saudi_riyal">&#xea;</span>{{ money(user.expenses_total) }}
                             </td>
-                            <td class="px-5 py-3 text-right tabular-nums text-gray-500 dark:text-gray-400">
+                            <td class="px-5 py-3 text-end tabular-nums text-gray-500 dark:text-gray-400">
                                 {{ user.incomes_count + user.expenses_count }}
                             </td>
                             <td class="px-5 py-3 text-gray-500 dark:text-gray-400">{{ user.created_at }}</td>
                             <td class="px-5 py-3">
                                 <select :value="user.role_id" :disabled="user.id === currentUserId"
                                     @change="changeRole(user, $event.target.value)"
-                                    class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                                    <option v-for="role in roles" :key="role.id" :value="role.id">{{ role.name }}</option>
+                                    class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm transition focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                                    <option v-for="role in roles" :key="role.id" :value="role.id">{{ t(role.name) }}</option>
                                 </select>
                             </td>
                         </tr>
                         <tr v-if="users.data.length === 0">
-                            <td colspan="6" class="px-5 py-10 text-center text-sm text-gray-400">No users match that search.</td>
+                            <td colspan="6" class="px-5 py-10 text-center text-sm text-gray-400">{{ t('No users match that search.') }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -118,7 +120,7 @@ function changeRole(user, roleId) {
                             <p class="truncate font-medium">
                                 {{ user.name }}
                                 <span v-if="user.id === currentUserId"
-                                    class="ml-1 rounded bg-indigo-50 px-1.5 py-0.5 text-xs font-medium text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-400">You</span>
+                                    class="ms-1 rounded bg-primary-50 px-1.5 py-0.5 text-xs font-medium text-primary-600 dark:bg-primary-500/15 dark:text-primary-400">{{ t('You') }}</span>
                             </p>
                             <p class="truncate text-xs text-gray-500 dark:text-gray-400">{{ user.email }}</p>
                         </div>
@@ -126,34 +128,34 @@ function changeRole(user, roleId) {
 
                     <dl class="mt-3 grid grid-cols-3 gap-2 text-center">
                         <div class="rounded-lg bg-gray-50 py-2 dark:bg-gray-800/60">
-                            <dt class="text-xs text-gray-500 dark:text-gray-400">Income</dt>
-                            <dd class="text-sm font-semibold tabular-nums text-emerald-600 dark:text-emerald-400">
+                            <dt class="text-xs text-gray-500 dark:text-gray-400">{{ t('Income') }}</dt>
+                            <dd class="text-sm font-semibold tabular-nums text-secondary-600 dark:text-secondary-400">
                                 <span class="icon-saudi_riyal">&#xea;</span>{{ money(user.incomes_total) }}
                             </dd>
                         </div>
                         <div class="rounded-lg bg-gray-50 py-2 dark:bg-gray-800/60">
-                            <dt class="text-xs text-gray-500 dark:text-gray-400">Expenses</dt>
+                            <dt class="text-xs text-gray-500 dark:text-gray-400">{{ t('Expenses') }}</dt>
                             <dd class="text-sm font-semibold tabular-nums text-rose-600 dark:text-rose-400">
                                 <span class="icon-saudi_riyal">&#xea;</span>{{ money(user.expenses_total) }}
                             </dd>
                         </div>
                         <div class="rounded-lg bg-gray-50 py-2 dark:bg-gray-800/60">
-                            <dt class="text-xs text-gray-500 dark:text-gray-400">Entries</dt>
+                            <dt class="text-xs text-gray-500 dark:text-gray-400">{{ t('Entries') }}</dt>
                             <dd class="text-sm font-semibold tabular-nums">{{ user.incomes_count + user.expenses_count }}</dd>
                         </div>
                     </dl>
 
                     <div class="mt-3 flex items-center justify-between gap-3">
-                        <span class="text-xs text-gray-400 dark:text-gray-500">Joined {{ user.created_at }}</span>
+                        <span class="text-xs text-gray-400 dark:text-gray-500">{{ t('Joined :date', { date: user.created_at }) }}</span>
                         <select :value="user.role_id" :disabled="user.id === currentUserId"
                             @change="changeRole(user, $event.target.value)"
-                            class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm transition focus:border-indigo-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
-                            <option v-for="role in roles" :key="role.id" :value="role.id">{{ role.name }}</option>
+                            class="rounded-lg border border-gray-300 bg-white px-2 py-1.5 text-sm transition focus:border-primary-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
+                            <option v-for="role in roles" :key="role.id" :value="role.id">{{ t(role.name) }}</option>
                         </select>
                     </div>
                 </li>
                 <li v-if="users.data.length === 0" class="p-10 text-center text-sm text-gray-400">
-                    No users match that search.
+                    {{ t('No users match that search.') }}
                 </li>
             </ul>
         </div>
@@ -164,7 +166,7 @@ function changeRole(user, roleId) {
                 :class="[
                     'rounded-lg px-3 py-1.5 text-sm transition',
                     link.active
-                        ? 'bg-indigo-600 font-semibold text-white'
+                        ? 'bg-primary-600 font-semibold text-white'
                         : link.url
                             ? 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
                             : 'cursor-not-allowed text-gray-300 dark:text-gray-700',

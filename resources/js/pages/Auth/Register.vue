@@ -1,75 +1,165 @@
 <script setup lang="ts">
-import { Form } from '@inertiajs/vue3'
-import { Link } from '@inertiajs/vue3'
+import { Form, Link } from '@inertiajs/vue3';
+import { ref } from 'vue';
+import {
+    register,
+    showLogin,
+} from '@/actions/App/Http/Controllers/AuthController';
+import AuthLayout from '@/layouts/AuthLayout.vue';
+import { useI18n } from '@/lib/i18n';
 
-defineOptions({ title: 'Register' })
+defineOptions({ title: 'Register' });
+
+const { t } = useI18n();
+
+const showPassword = ref(false);
+
+const fieldClass =
+    'w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 shadow-sm transition placeholder:text-gray-400 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-500';
+
+const errorClass = 'border-red-400 focus:border-red-500 focus:ring-red-500/20';
 </script>
 
 <template>
-    <div class="flex min-h-screen items-center justify-center bg-gray-50">
-        <div class="w-full max-w-md rounded-2xl bg-white p-8 shadow-md">
-            <h1 class="mb-6 text-center text-2xl font-bold text-gray-800">Create an Account</h1>
+    <AuthLayout
+        :title="t('Create your account')"
+        :subtitle="t('Start tracking your budget in under a minute.')"
+    >
+        <Form
+            v-bind="register.form()"
+            class="space-y-5"
+            #default="{ errors, processing }"
+        >
+            <div>
+                <label
+                    for="name"
+                    class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                    {{ t('Name') }}
+                </label>
+                <input
+                    id="name"
+                    type="text"
+                    name="name"
+                    autocomplete="name"
+                    :placeholder="t('Your name')"
+                    :class="[fieldClass, errors.name && errorClass]"
+                />
+                <p v-if="errors.name" class="mt-1.5 text-xs text-red-500">
+                    {{ errors.name }}
+                </p>
+            </div>
 
-            <Form action="/register" method="post" #default="{ errors, processing }">
-                <div class="mb-4">
-                    <label class="mb-1 block text-sm font-medium text-gray-700">Name</label>
-                    <input
-                        type="text"
-                        name="name"
-                        autocomplete="name"
-                        class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
-                        :class="{ 'border-red-400': errors.name }"
-                    />
-                    <p v-if="errors.name" class="mt-1 text-xs text-red-500">{{ errors.name }}</p>
-                </div>
+            <div>
+                <label
+                    for="email"
+                    class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                    {{ t('Email') }}
+                </label>
+                <input
+                    id="email"
+                    type="email"
+                    name="email"
+                    autocomplete="email"
+                    placeholder="you@example.com"
+                    :class="[fieldClass, errors.email && errorClass]"
+                />
+                <p v-if="errors.email" class="mt-1.5 text-xs text-red-500">
+                    {{ errors.email }}
+                </p>
+            </div>
 
-                <div class="mb-4">
-                    <label class="mb-1 block text-sm font-medium text-gray-700">Email</label>
+            <div>
+                <label
+                    for="password"
+                    class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                    {{ t('Password') }}
+                </label>
+                <div class="relative">
                     <input
-                        type="email"
-                        name="email"
-                        autocomplete="email"
-                        class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
-                        :class="{ 'border-red-400': errors.email }"
-                    />
-                    <p v-if="errors.email" class="mt-1 text-xs text-red-500">{{ errors.email }}</p>
-                </div>
-
-                <div class="mb-4">
-                    <label class="mb-1 block text-sm font-medium text-gray-700">Password</label>
-                    <input
-                        type="password"
+                        id="password"
+                        :type="showPassword ? 'text' : 'password'"
                         name="password"
                         autocomplete="new-password"
-                        class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
-                        :class="{ 'border-red-400': errors.password }"
+                        :placeholder="t('At least 8 characters')"
+                        :class="[
+                            fieldClass,
+                            'pe-11',
+                            errors.password && errorClass,
+                        ]"
                     />
-                    <p v-if="errors.password" class="mt-1 text-xs text-red-500">{{ errors.password }}</p>
+                    <button
+                        type="button"
+                        @click="showPassword = !showPassword"
+                        class="absolute inset-y-0 end-0 flex w-11 items-center justify-center text-gray-400 transition hover:text-gray-600 dark:hover:text-gray-200"
+                        :aria-label="
+                            showPassword ? t('Hide password') : t('Show password')
+                        "
+                    >
+                        <i
+                            :class="
+                                showPassword
+                                    ? 'fa-solid fa-eye-slash'
+                                    : 'fa-solid fa-eye'
+                            "
+                            class="text-sm"
+                        ></i>
+                    </button>
                 </div>
+                <p v-if="errors.password" class="mt-1.5 text-xs text-red-500">
+                    {{ errors.password }}
+                </p>
+            </div>
 
-                <div class="mb-6">
-                    <label class="mb-1 block text-sm font-medium text-gray-700">Confirm Password</label>
-                    <input
-                        type="password"
-                        name="password_confirmation"
-                        autocomplete="new-password"
-                        class="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
-                    />
-                </div>
-
-                <button
-                    type="submit"
-                    :disabled="processing"
-                    class="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-60"
+            <div>
+                <label
+                    for="password_confirmation"
+                    class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
-                    {{ processing ? 'Creating account...' : 'Create Account' }}
-                </button>
-            </Form>
+                    {{ t('Confirm password') }}
+                </label>
+                <input
+                    id="password_confirmation"
+                    :type="showPassword ? 'text' : 'password'"
+                    name="password_confirmation"
+                    autocomplete="new-password"
+                    :placeholder="t('Repeat your password')"
+                    :class="[
+                        fieldClass,
+                        errors.password_confirmation && errorClass,
+                    ]"
+                />
+                <p
+                    v-if="errors.password_confirmation"
+                    class="mt-1.5 text-xs text-red-500"
+                >
+                    {{ errors.password_confirmation }}
+                </p>
+            </div>
 
-            <p class="mt-4 text-center text-sm text-gray-500">
-                Already have an account?
-                <Link href="/login" class="font-medium text-blue-600 hover:underline">Sign in</Link>
-            </p>
-        </div>
-    </div>
+            <button
+                type="submit"
+                :disabled="processing"
+                class="flex w-full items-center justify-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-primary-600/25 transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+                <i
+                    v-if="processing"
+                    class="fa-solid fa-circle-notch animate-spin text-xs"
+                ></i>
+                {{ processing ? t('Creating account…') : t('Create account') }}
+            </button>
+        </Form>
+
+        <template #footer>
+            {{ t('Already have an account?') }}
+            <Link
+                :href="showLogin.url()"
+                class="font-medium text-primary-600 hover:underline dark:text-primary-400"
+            >
+                {{ t('Sign in') }}
+            </Link>
+        </template>
+    </AuthLayout>
 </template>
