@@ -14,7 +14,10 @@ class GoalController extends Controller
     public function index(): Response
     {
         return Inertia::render('Goals/Index', [
-            'goals' => auth()->user()->goals()->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")->orderByRaw('target_date IS NULL, target_date ASC')->get(),
+            'goals' => auth()->user()->goals()
+                ->orderByRaw("CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END")
+                ->orderByRaw('CASE WHEN target_date IS NULL THEN 1 ELSE 0 END, target_date ASC')
+                ->get(),
         ]);
     }
 

@@ -48,6 +48,29 @@ it('does not overwrite an existing admin password', function () {
     expect(Hash::check('super-secret-password', $admin->password))->toBeTrue();
 });
 
+it('gives an existing account with the admin email the admin role', function () {
+    $existing = User::factory()->create([
+        'email' => 'admin@example.com',
+        'password' => 'registered-password',
+        'role_id' => null,
+    ]);
+
+    $this->seed(ProductionSeeder::class);
+
+    $existing->refresh();
+
+    expect($existing->isAdmin())->toBeTrue()
+        ->and(Hash::check('registered-password', $existing->password))->toBeTrue();
+});
+
+it('assigns the user role to accounts without a role', function () {
+    $member = User::factory()->create(['email' => 'member@example.com', 'role_id' => null]);
+
+    $this->seed(ProductionSeeder::class);
+
+    expect($member->refresh()->role->name)->toBe(Role::USER);
+});
+
 it('skips the admin user when credentials are missing', function () {
     config(['admin.email' => null, 'admin.password' => null]);
 

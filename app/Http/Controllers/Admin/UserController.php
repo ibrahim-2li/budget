@@ -23,8 +23,8 @@ class UserController extends Controller
             ->withSum('incomes as incomes_total', 'amount')
             ->withSum('expenses as expenses_total', 'amount')
             ->when($search !== '', fn ($query) => $query->where(
-                fn ($query) => $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
+                fn ($query) => $query->whereLike('name', "%{$search}%")
+                    ->orWhereLike('email', "%{$search}%")
             ))
             ->latest()
             ->paginate(15)

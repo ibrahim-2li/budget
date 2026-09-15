@@ -18,11 +18,23 @@ class ProductionSeeder extends Seeder
             CategorySeeder::class,
         ]);
 
+        $this->assignDefaultRoles();
         $this->seedAdministrator();
     }
 
     /**
-     * Create the initial administrator from config, if it does not exist yet.
+     * Give users that registered before the roles existed the regular user role.
+     */
+    private function assignDefaultRoles(): void
+    {
+        User::whereNull('role_id')->update([
+            'role_id' => Role::where('name', Role::USER)->value('id'),
+        ]);
+    }
+
+    /**
+     * Create the initial administrator from config and make sure it has the admin role.
+     * An existing account keeps its password.
      */
     private function seedAdministrator(): void
     {
@@ -35,13 +47,19 @@ class ProductionSeeder extends Seeder
             return;
         }
 
-        User::firstOrCreate(
+        $adminRoleId = Role::where('name', Role::ADMIN)->value('id');
+
+        $admin = User::firstOrCreate(
             ['email' => $email],
             [
                 'name' => config('admin.name'),
                 'password' => $password,
-                'role_id' => Role::where('name', Role::ADMIN)->value('id'),
+                'role_id' => $adminRoleId,
             ],
         );
+
+        if ($admin->role_id !== $adminRoleId) {
+            $admin->update(['role_id' => $adminRoleId]);
+        }
     }
 }
