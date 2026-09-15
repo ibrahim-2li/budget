@@ -56,6 +56,7 @@ ENV APP_ENV=production \
 
 ARG USER=app
 RUN useradd --create-home --uid 1000 ${USER} \
+    && chown ${USER}:${USER} /app \
     && chown -R ${USER}:${USER} /data/caddy /config/caddy
 
 COPY --chown=${USER}:${USER} . .
