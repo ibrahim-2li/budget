@@ -49,13 +49,24 @@ esac
 
 php artisan storage:link --force >/dev/null 2>&1 || true
 
-if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
+is_enabled() {
+    case "$(printf '%s' "$1" | tr -d '"'"'"' ' | tr '[:upper:]' '[:lower:]')" in
+        true|1|yes|on) return 0 ;;
+        *) return 1 ;;
+    esac
+}
+
+if is_enabled "${RUN_MIGRATIONS:-}"; then
     php artisan migrate --force
+else
+    echo "Skipping migrations (RUN_MIGRATIONS=${RUN_MIGRATIONS:-<not set>})"
 fi
 
 # Seeds roles, categories and the admin user; safe to run on every deploy
-if [ "${RUN_SEEDERS:-false}" = "true" ]; then
+if is_enabled "${RUN_SEEDERS:-}"; then
     php artisan db:seed --class=ProductionSeeder --force
+else
+    echo "Skipping seeders (RUN_SEEDERS=${RUN_SEEDERS:-<not set>})"
 fi
 
 php artisan optimize
