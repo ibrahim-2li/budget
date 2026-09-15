@@ -1,7 +1,7 @@
 import { createInertiaApp, router } from '@inertiajs/vue3';
 import { applyDocumentLocale } from '@/lib/i18n';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+const appName = import.meta.env.VITE_APP_NAME || 'Budget';
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
