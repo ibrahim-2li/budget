@@ -53,6 +53,11 @@ if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
     php artisan migrate --force
 fi
 
+# Seeds roles, categories and the admin user; safe to run on every deploy
+if [ "${RUN_SEEDERS:-false}" = "true" ]; then
+    php artisan db:seed --class=ProductionSeeder --force
+fi
+
 php artisan optimize
 
 exec "$@"
