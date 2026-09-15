@@ -20,10 +20,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::factory()->create([
-            'name' => 'ibrahim',
-            'email' => 'ibrahim.2li@hotmail.com',
-            'password' => Hash::make('Bg@4272456@123'),
-            'role_id' => Role::where('name', Role::ADMIN)->value('id'),
+            'name' => 'test',
+            'email' => 'test@example.com',
+            'role_id' => Role::where('name', Role::USER)->value('id'),
         ]);
     }
 }
