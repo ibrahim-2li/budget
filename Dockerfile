@@ -14,6 +14,7 @@ WORKDIR /app
 
 RUN install-php-extensions \
         pdo_mysql \
+        pdo_pgsql \
         opcache \
         intl \
         zip \
@@ -51,8 +52,7 @@ FROM base AS production
 
 ENV APP_ENV=production \
     APP_DEBUG=false \
-    LOG_CHANNEL=stderr \
-    SERVER_NAME=:8080
+    LOG_CHANNEL=stderr
 
 ARG USER=app
 RUN useradd --create-home --uid 1000 ${USER} \
@@ -71,7 +71,7 @@ USER ${USER}
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD curl -fsS http://127.0.0.1:8080/up || exit 1
+    CMD curl -fsS "http://127.0.0.1:${PORT:-8080}/up" || exit 1
 
 ENTRYPOINT ["entrypoint"]
 CMD ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile"]

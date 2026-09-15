@@ -3,6 +3,9 @@ set -e
 
 cd /app
 
+# Platforms like Render inject the port to listen on via $PORT
+export SERVER_NAME="${SERVER_NAME:-:${PORT:-8080}}"
+
 if [ -z "$APP_KEY" ]; then
     echo "APP_KEY is not set. Generate one with: php artisan key:generate --show" >&2
     exit 1
