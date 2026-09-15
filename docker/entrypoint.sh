@@ -28,6 +28,20 @@ if [ -n "$APP_URL" ] && ! printf '%s' "$APP_URL" | grep -qE '^https?://[A-Za-z0-
     exit 1
 fi
 
+# Render's docs name the connection string DATABASE_URL; Laravel reads DB_URL
+if [ -z "$DB_URL" ] && [ -n "$DATABASE_URL" ]; then
+    export DB_URL="$DATABASE_URL"
+fi
+
+case "${DB_CONNECTION:-}" in
+    pgsql|mysql|mariadb)
+        if [ -z "$DB_URL" ] && [ -z "$DB_HOST" ] && ! grep -qE '^(DB_URL|DB_HOST)=.+' /app/.env 2>/dev/null; then
+            echo "No database configured for DB_CONNECTION=$DB_CONNECTION. Set DB_URL (e.g. Render's Internal Database URL) or DB_HOST/DB_PORT/DB_DATABASE/DB_USERNAME/DB_PASSWORD." >&2
+            exit 1
+        fi
+        ;;
+esac
+
 php artisan storage:link --force >/dev/null 2>&1 || true
 
 if [ "${RUN_MIGRATIONS:-false}" = "true" ]; then
