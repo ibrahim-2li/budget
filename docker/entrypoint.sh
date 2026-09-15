@@ -33,6 +33,11 @@ if [ -z "$DB_URL" ] && [ -n "$DATABASE_URL" ]; then
     export DB_URL="$DATABASE_URL"
 fi
 
+if [ -n "$DB_URL" ] && ! printf '%s' "$DB_URL" | grep -q '://'; then
+    echo "DB_URL must be a full connection URL like postgresql://USER:PASSWORD@HOST:5432/DATABASE (got a value without '://'). Copy Render's Internal Database URL, not just the hostname." >&2
+    exit 1
+fi
+
 case "${DB_CONNECTION:-}" in
     pgsql|mysql|mariadb)
         if [ -z "$DB_URL" ] && [ -z "$DB_HOST" ] && ! grep -qE '^(DB_URL|DB_HOST)=.+' /app/.env 2>/dev/null; then

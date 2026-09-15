@@ -55,7 +55,11 @@ ENV APP_ENV=production \
     LOG_CHANNEL=stderr
 
 ARG USER=app
-RUN useradd --create-home --uid 1000 ${USER} \
+# The app listens on a high port, so drop FrankenPHP's cap_net_bind_service file
+# capability; platforms that forbid privilege escalation (e.g. Render) refuse to
+# exec binaries carrying file capabilities ("Operation not permitted")
+RUN setcap -r /usr/local/bin/frankenphp \
+    && useradd --create-home --uid 1000 ${USER} \
     && chown ${USER}:${USER} /app \
     && chown -R ${USER}:${USER} /data/caddy /config/caddy
 
