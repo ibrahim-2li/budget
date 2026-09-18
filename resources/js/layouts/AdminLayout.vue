@@ -8,7 +8,6 @@ import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import MobileBottomNav from '@/components/MobileBottomNav.vue';
 import { useI18n } from '@/lib/i18n';
 import { dashboard, users, categories } from '@/routes/admin';
-import goals from '@/routes/goals';
 
 defineProps({
     title: { type: String, required: true },

@@ -5,7 +5,7 @@ import { index as budgetIndex } from '@/actions/App/Http/Controllers/BudgetContr
 import { index as goalsIndex } from '@/actions/App/Http/Controllers/GoalController';
 import MobileBottomNav from '@/components/MobileBottomNav.vue';
 import { useI18n } from '@/lib/i18n';
-import { dashboard as adminDashboard, categories, dashboard, users } from '@/routes/admin';
+import { dashboard as adminDashboard } from '@/routes/admin';
 
 const page = usePage();
 const { t } = useI18n();

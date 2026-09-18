@@ -170,7 +170,9 @@ function changeRole(user, roleId) {
                         : link.url
                             ? 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
                             : 'cursor-not-allowed text-gray-300 dark:text-gray-700',
-                ]" v-html="link.label" />
+                ]">
+                <span v-html="link.label"></span>
+            </Link>
         </div>
     </AdminLayout>
 </template>
