@@ -9,12 +9,11 @@ use App\Http\Controllers\GoalController;
 use App\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'Welcome')->name('home');
-
 Route::post('/locale/{locale}', LocaleController::class)->name('locale.update');
 
 // Guest routes
 Route::middleware('guest')->group(function () {
+    Route::get('/', [AuthController::class, 'showLogin'])->name('home');
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');

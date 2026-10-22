@@ -23,6 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
+        $middleware->redirectUsersTo(fn () => route('budget'));
+
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
         ]);
