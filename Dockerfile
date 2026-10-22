@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG PHP_VERSION=8.4
+ARG PHP_VERSION=8.3
 ARG NODE_VERSION=22
 
 FROM node:${NODE_VERSION}-bookworm-slim AS node

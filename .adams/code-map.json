@@ -1,0 +1,241 @@
+{
+ "folders": {
+  ".": {
+   "agents": "6c6d51ffdbfd0e2b5906298e9530c3b5d47152c556399e24d762f35738656cea",
+   "files": {
+    "eslint.config.js": "8ffc719c8d3228d73ae8bd7a7141021349c1caf23b49f94b11ffe3f3ab1d6995",
+    "vite.config.ts": "3e0836e6f4be9b1feed48a7760dc2a47107102defc555720c8169febd1298b62"
+   },
+   "hash": "07332c9e48247efb574de6d0d1a95845968d064ea2f679524fc55619f73c2309",
+   "subs": [
+    "resources"
+   ]
+  },
+  "resources": {
+   "agents": "a0a83a5610e2b1adbec25c6187dcc96ccef7e025a88a5cc8b64ee8a6b32743a8",
+   "files": {},
+   "hash": "73f4cb2e4882f6e0eaf94991e6841e91e070d1991cc3f79924b77f5a026f856f",
+   "subs": [
+    "js"
+   ]
+  },
+  "resources/js": {
+   "agents": "0d23d2ef7ad7f42901c078122507ff1598e4891f828da9a65fd14b22759e920d",
+   "files": {
+    "app.ts": "583da5b2b8aa981fdb4acf0d641f4d295e378cf1e54c6a1a2d4e02ec0778682d"
+   },
+   "hash": "a3140abb4f429c558a74df3a3e1aebc2e30355243efbc58a0eacf064f276f47f",
+   "subs": [
+    "actions",
+    "lib",
+    "routes",
+    "types",
+    "wayfinder"
+   ]
+  },
+  "resources/js/actions": {
+   "agents": "7d56493d042471fec9aa8121d766df9738b35af6e9a390a2776d1d870aedf7d9",
+   "files": {},
+   "hash": "2ea64ba4ea8ca5d4e2f91ea0cada08ab8f9919e23f2e652cdd28c442b90c4ca7",
+   "subs": [
+    "App",
+    "Inertia"
+   ]
+  },
+  "resources/js/actions/App": {
+   "agents": "313c15f66ec5b1659965a3d9b0da8388576ce02cd55db4466813d5d86daeedf6",
+   "files": {
+    "index.ts": "8ef7f44791996f6b8511aec969d6e674f99e63183adb56d08d6194a25b68089d"
+   },
+   "hash": "48f1b28166437cf4a8667f4d5516909dee5620cb456df6da8c80a89251e984fb",
+   "subs": [
+    "Http"
+   ]
+  },
+  "resources/js/actions/App/Http": {
+   "agents": "99590ef9e3a758ef930473e5930799c569a9d83aa96cc81ccf844bd405e8442a",
+   "files": {
+    "index.ts": "6c68666a1592349c053644b77368568855d7381db81accff3cfc4d8d795bde8a"
+   },
+   "hash": "1061e45aeddd772a66b35f7061457d3009babb015fd56c1ac975add4dd297f9e",
+   "subs": [
+    "Controllers"
+   ]
+  },
+  "resources/js/actions/App/Http/Controllers": {
+   "agents": "8b5e8fc0bc6b22b9d307c7afcd4a1601df9e7d837bd209157a4e6c212e439353",
+   "files": {
+    "AuthController.ts": "f67059517bc60ae5acd316df6be4cbdecbe6c55730897ff24d60a1dc039ec8f7",
+    "BudgetController.ts": "61f0b45935d8ab16dd3d6933612d9b1e1d1ec7c26bcf57c01ce5564c6037c227",
+    "GoalController.ts": "5d0cd4d9f7fe30fc7bb97f6d8974e44a41f3968d3f15c5a718fa0c11ee4da287",
+    "LocaleController.ts": "daeadf8fb20c6f7846364fcd1dc25e8569c0b06643d313e0d07306773b13d53b",
+    "index.ts": "4e14d17c9fa5c4b17f04e2d5800543f19948918e12c37df3977fa58c0be147e2"
+   },
+   "hash": "a047ae55aff8796e2c90374b3f786ba1997e1527d48fc37457de115aea8afcbc",
+   "subs": [
+    "Admin"
+   ]
+  },
+  "resources/js/actions/App/Http/Controllers/Admin": {
+   "agents": "37904b45cf46c427928c5cde06454c045063a608b21f7e5d9c1374cb5caef233",
+   "files": {
+    "CategoryController.ts": "2df7d11efb0c3208265d63396095bbaea3fe2408e694b35bac6cae8fcceb66d9",
+    "DashboardController.ts": "a8b44f2a62072a1e0873c27b843e622f29bffd961bea355a0757d67442cfffe9",
+    "UserController.ts": "67cb2bf6ee75d8260499c7a01ba2437516fdb3ab20d78a39088c63146847532c",
+    "index.ts": "fc4c1eacbbefce6e57f873d3170daa3384f47d359c161c500b201d2983724daf"
+   },
+   "hash": "e2d715a28fe3eb7f34ba7e7a57dba2b692404c78c78b90f0606378bd16a44db1",
+   "subs": []
+  },
+  "resources/js/actions/Inertia": {
+   "agents": "a2f5d1aa88de01f46b0ab620172da8e82e33300bef56a22e903266759efe339d",
+   "files": {
+    "Controller.ts": "26c7d88b24ed983cb2f1ab85297a2ab314013a7dda19ceddab902e5803bc3183",
+    "index.ts": "8f8ac32f5edc77c85a3ce163dc995c55e883c09a32da876f5ae63a4ce32c83ab"
+   },
+   "hash": "96100bbbde8391188743a0beca50c80e76c1e5fd2f3d73c1d69a8b4dd4cccdbe",
+   "subs": []
+  },
+  "resources/js/lib": {
+   "agents": "fbde8edbfc10415cfd195ef3119004948b09ffb51cb28a14a0b3d2625263c2ff",
+   "files": {
+    "i18n.ts": "6117195c30034ab03b0d4bbc86f5289ad500c5bb2c93d06c94c77296e86c3566",
+    "utils.ts": "dd186ab06a7025f16df1783fd05bc0b12856708389dcd021512ef71b38c1b605"
+   },
+   "hash": "620e178a65caf4022cd13955304e7498a4b37b0b0a363d168c6de49859b3c53c",
+   "subs": []
+  },
+  "resources/js/routes": {
+   "agents": "d05546af33d2822e39b22a34af1ec7b58de36e94e259bc521382cfe089e2198f",
+   "files": {
+    "index.ts": "b495b09e72c56a1dc28a95210d2326021f71c3148540eb6127b585caa041555d"
+   },
+   "hash": "8819a307f3348411d47c7683bdb681c44c4ebc5c3698f44120e6294336e9c439",
+   "subs": [
+    "admin",
+    "boost",
+    "budget",
+    "goals",
+    "locale",
+    "storage"
+   ]
+  },
+  "resources/js/routes/admin": {
+   "agents": "24f2241b861403b11d25a0867b52d9b9f52e210ae2917b0089dddd1c1748f2b4",
+   "files": {
+    "index.ts": "04e2e2fc3604243322645f388df5a0b643e466ebc30895bec062015576c4959e"
+   },
+   "hash": "cfa7a32951ea42a3ab8b530623d2ba794307dcb9fe8d4e8b90a57640abb27f27",
+   "subs": [
+    "categories",
+    "users"
+   ]
+  },
+  "resources/js/routes/admin/categories": {
+   "agents": "a13fef94aba908a531cd487c943ef449513044456269401b56b6f96b52ca4f5a",
+   "files": {
+    "index.ts": "ed7fb97366e657339f3ad2b75d08f211e525263e45f1f60e63142249d3a9109c"
+   },
+   "hash": "e4fb742afbdd68e9e9680c21592aba4beaf5d3e6efc4afd09cbe3dafe50a6fd7",
+   "subs": []
+  },
+  "resources/js/routes/admin/users": {
+   "agents": "b8c01e0bbe11d2d35e9ba09199b66ec4633bd2dd23ea11bca59a23c1d10a8c75",
+   "files": {
+    "index.ts": "3b9817c84c2f5224d786fa9c622596ff2a0568603f0f4a5038a6622b52edc523"
+   },
+   "hash": "6ee9b759c779ca8792a6c9b43a6b9033f160be91db621c8ac30dd1b7bd27acb3",
+   "subs": []
+  },
+  "resources/js/routes/boost": {
+   "agents": "95af2a97be9ccdd8c5bf9493ab9ed3386e009dc2582ca5b15a7211b8ddf50bfb",
+   "files": {
+    "index.ts": "6b4e03c9ebf984cf39440cd97b61b8580a14954b147ccb96c8cb989968f3ea35"
+   },
+   "hash": "3ca9d8a0725fdc3189181294d91cc51f124f5a0ab200040eed65e270f0ae2451",
+   "subs": []
+  },
+  "resources/js/routes/budget": {
+   "agents": "de57db21819280a988bd47ac3a99f40e59c0222f329ffd3e5ae28c4c18db0bd9",
+   "files": {
+    "index.ts": "b119e0476f790e8cb96a00b7b347ae00c57d26a81231a21ddb06f6def4f799c9"
+   },
+   "hash": "804f40da65ae895988c86f60e7f1b8027305b634315bc028f148b231f97f49b6",
+   "subs": [
+    "expense",
+    "income"
+   ]
+  },
+  "resources/js/routes/budget/expense": {
+   "agents": "83a6c3c6eb34c5834e0393a80ec0218714e44d27cfc9aef5aaecc2d29f049877",
+   "files": {
+    "index.ts": "3f63f997ffb30d02900a2bf4a581faa42ead1b07304b915211832dddfcf274bf"
+   },
+   "hash": "8e5a15bb592c137d8f898bbd51efbbaa4521f7ed35095628c364c6951f687cf5",
+   "subs": []
+  },
+  "resources/js/routes/budget/income": {
+   "agents": "83a6c3c6eb34c5834e0393a80ec0218714e44d27cfc9aef5aaecc2d29f049877",
+   "files": {
+    "index.ts": "b18f3fed8eba707879cada403c7b1d570a983a8ed39a86df1e33258e85950d03"
+   },
+   "hash": "a7af25c5fc9726fa307bf34eb0beb8c528023ba899e5a5d38cfb1c12d5618133",
+   "subs": []
+  },
+  "resources/js/routes/goals": {
+   "agents": "70dab2306012167480ed15f70577d9f65a44717fc103f73901fe2b255b5836d7",
+   "files": {
+    "index.ts": "cad403797f7d4765235abed32968244a4069d6673ac9892e0a363e75892c0bac"
+   },
+   "hash": "dc9e826e8a8231727f64b26b7d3eff723a9b696ab2ee51bf81034d1bf6b59003",
+   "subs": []
+  },
+  "resources/js/routes/locale": {
+   "agents": "b14d04f57de78e718f8815b9be0963125fdfcad5527bc509c26333a4384d40c3",
+   "files": {
+    "index.ts": "c6cc609d12835e96bb2224b6809a0d840ef46adf7fc6c47fce9d9106557f043c"
+   },
+   "hash": "7992273260d9c13693d3109b66a18c699166d5511c2696f656b61c2d9d5c7d8b",
+   "subs": []
+  },
+  "resources/js/routes/storage": {
+   "agents": "77cbfbca41a6967cea3785e880075d8e91278382f88b48a9522bd389d7884f60",
+   "files": {
+    "index.ts": "26df90678623ac8b85164f491de049ce97d1f5b0d0be9c52343709b5fbf5bf3f"
+   },
+   "hash": "8aa2e8fb9602f91e97f46fa305abb67613f15f84f0bc0347eec7bfb40c9b21f7",
+   "subs": [
+    "local"
+   ]
+  },
+  "resources/js/routes/storage/local": {
+   "agents": "82b24a90128ba02d9d503afe69153e8a1258aa9f0ced1cfc5680271c42503878",
+   "files": {
+    "index.ts": "210046622d68aed8dda888db331b7ec4faab581568b0a7f798927ef268c92c66"
+   },
+   "hash": "0ea5b19b5ff1d7b9ff06c6129fef7a3bf558dac8c46f1bd2ba2cdc0bc9d2a778",
+   "subs": []
+  },
+  "resources/js/types": {
+   "agents": "15a051fec1755baa6feb218f9c6a559b64e2ae6cf8bc87fa303bcb00652661ae",
+   "files": {
+    "auth.ts": "3c5c64c65dda7b698b92ca44f10980106a583fae5d60137a1f1e83b9ccefa3fa",
+    "global.d.ts": "bd5e46279b593b4ce72638d58768d0b6d1fbeb2a7c846d25fcc118ff63922262",
+    "index.ts": "0d1e9013237428428f2c4b8c4c64e3b5fce66d8140bc75629c0cc320c85c4925",
+    "vue-shims.d.ts": "4a169d4115796bcae3f3fcaa8dda59a44646031462f5b36938ddd5d5ba35ae80"
+   },
+   "hash": "1acae6dcfa95ac790f907f5f09434c3e5a512eb5420800405d379b149f752595",
+   "subs": []
+  },
+  "resources/js/wayfinder": {
+   "agents": "5c75cfcd5ee93da0e320e38e510c7d1a0016531bd0a895f795a33d697a355ac2",
+   "files": {
+    "index.ts": "c24c3c802d819ce114935ca5734ed39863878b12953dc451bc3a76c32fe6f42e"
+   },
+   "hash": "ed9de1a2ef7984365db85faaf1eeb2cce1e85720a13aa7ba6a7375a45cb8b8fb",
+   "subs": []
+  }
+ },
+ "last_run": "2026-10-18T16:39:31+0300",
+ "version": 1
+}

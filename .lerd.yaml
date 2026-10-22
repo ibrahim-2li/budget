@@ -1,6 +1,6 @@
 domains:
   - budget
-php_version: "8.4"
+php_version: "8.3"
 framework: laravel
 framework_version: "13"
 services:
