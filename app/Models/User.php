@@ -31,6 +31,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function biometricTokens(): HasMany
+    {
+        return $this->hasMany(BiometricToken::class);
+    }
+
     public function incomes(): HasMany
     {
         return $this->hasMany(Income::class);

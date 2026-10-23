@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { Form, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import {
-    register,
-    showLogin,
-} from '@/actions/App/Http/Controllers/AuthController';
+import { register } from '@/actions/App/Http/Controllers/AuthController';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { useI18n } from '@/lib/i18n';
+import { login } from '@/routes';
 
 defineOptions({ title: 'Register' });
 
@@ -155,7 +153,7 @@ const errorClass = 'border-red-400 focus:border-red-500 focus:ring-red-500/20';
         <template #footer>
             {{ t('Already have an account?') }}
             <Link
-                :href="showLogin.url()"
+                :href="login.url()"
                 class="font-medium text-primary-600 hover:underline dark:text-primary-400"
             >
                 {{ t('Sign in') }}

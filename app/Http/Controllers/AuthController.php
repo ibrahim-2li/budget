@@ -30,6 +30,9 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
+        // The Android app offers fingerprint sign-in after a password sign-in
+        Inertia::flash('offerBiometric', true);
+
         return redirect()->route('budget');
     }
 
@@ -60,6 +63,9 @@ class AuthController extends Controller
 
         request()->session()->invalidate();
         request()->session()->regenerateToken();
+
+        // Keeps the login page from asking for a fingerprint right after signing out
+        Inertia::flash('loggedOut', true);
 
         return redirect()->route('home');
     }

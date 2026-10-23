@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BiometricController;
 use App\Http\Controllers\BudgetController;
 use App\Http\Controllers\GoalController;
 use App\Http\Controllers\LocaleController;
@@ -16,6 +17,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/', [AuthController::class, 'showLogin'])->name('home');
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login/biometric', [BiometricController::class, 'login'])
+        ->middleware('throttle:10,1')
+        ->name('login.biometric');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register']);
 });
@@ -23,6 +27,7 @@ Route::middleware('guest')->group(function () {
 // Auth routes
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::post('/biometric/token', [BiometricController::class, 'store'])->name('biometric.store');
 
     Route::get('/budget', [BudgetController::class, 'index'])->name('budget');
     Route::post('/budget/income', [BudgetController::class, 'addIncome'])->name('budget.income.store');

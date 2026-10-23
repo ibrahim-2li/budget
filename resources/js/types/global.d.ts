@@ -21,6 +21,10 @@ declare module '@inertiajs/core' {
             sidebarOpen: boolean;
             [key: string]: unknown;
         };
+        flashDataType: {
+            offerBiometric?: boolean;
+            loggedOut?: boolean;
+        };
     }
 }
 

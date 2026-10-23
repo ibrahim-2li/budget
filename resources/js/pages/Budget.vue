@@ -4,6 +4,7 @@ import { router } from '@inertiajs/vue3';
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import AppLogo from '@/components/AppLogo.vue';
 import AppSidebar from '@/components/AppSidebar.vue';
+import BiometricEnrollPrompt from '@/components/BiometricEnrollPrompt.vue';
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
 import { useI18n } from '@/lib/i18n';
 import CategorySelect from '../components/CategorySelect.vue';
@@ -441,6 +442,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown));
             class="mx-auto flex max-w-6xl gap-6 px-4 pt-5 pb-28 sm:px-6 sm:pt-8 lg:pb-16"
         >
             <AppSidebar />
+            <BiometricEnrollPrompt />
 
             <main class="min-w-0 flex-1">
                 <!-- Month Navigation -->

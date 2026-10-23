@@ -214,5 +214,16 @@
     "Entertainment": "الترفيه",
     "Shopping": "التسوق",
     "Health": "الصحة",
-    "Other": "أخرى"
+    "Other": "أخرى",
+
+    "Sign in with fingerprint": "تسجيل الدخول بالبصمة",
+    "Fingerprint sign-in is no longer valid. Sign in with your password.": "لم يعد تسجيل الدخول بالبصمة صالحًا. سجّل الدخول بكلمة المرور.",
+    "Your fingerprints changed. Sign in with your password to turn fingerprint sign-in on again.": "تغيّرت البصمات على هذا الهاتف. سجّل الدخول بكلمة المرور لتفعيل الدخول بالبصمة من جديد.",
+    "Sign in faster next time": "سجّل الدخول أسرع في المرة القادمة",
+    "Use your fingerprint instead of your password on this phone.": "استخدم بصمتك بدل كلمة المرور على هذا الهاتف.",
+    "Turn on": "تفعيل",
+    "Not now": "ليس الآن",
+    "Fingerprint sign-in is on.": "تم تفعيل تسجيل الدخول بالبصمة.",
+    "Could not turn on fingerprint sign-in. Try again later.": "تعذّر تفعيل تسجيل الدخول بالبصمة. حاول لاحقًا.",
+    "or": "أو"
 }
